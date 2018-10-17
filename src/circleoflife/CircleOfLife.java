@@ -90,16 +90,68 @@ public class CircleOfLife {
     }
     
     public double distance(Area a1, Area a2) {
-        if (!hasOverlap(a1, a2)) {
-            // use the distance between center points for now
-            Rectangle b1 = a1.getBounds();
-            Rectangle b2 = a2.getBounds();
-            
-            Point2D c1 = new Point2D.Double(b1.getCenterX(), b1.getCenterY());
-            return c1.distance(b2.getCenterX(), b2.getCenterY());
+        // distance between center points
+        
+        Rectangle b1 = a1.getBounds();
+        Rectangle b2 = a2.getBounds();
+
+        Point2D c1 = new Point2D.Double(b1.getCenterX(), b1.getCenterY());
+        return c1.distance(b2.getCenterX(), b2.getCenterY());
+    }
+    
+    public double distance(Area a, Point2D p) {
+        Rectangle b = a.getBounds();
+        Point2D c = new Point2D.Double(b.getCenterX(), b.getCenterY());
+        return c.distance(p);
+    }
+    
+    public int numOverlaps(Area a, Area[] areas) {
+        int numOverlaps = 0;
+        
+        for (Area other : areas) {
+            if (other != a) {
+                if (hasOverlap(a, other)) {
+                    ++numOverlaps;
+                }
+            }
         }
         
-        return -1;
+        return numOverlaps;
+    }
+    
+    private double overlappingDistances(Area a, Area[] areas) {
+        double total = 0;
+        
+        for (Area other : areas) {
+            if (other != a) {
+                if (hasOverlap(a, other)) {
+                    // use the inverse distance for the sake of simplicity
+                    total += 1.0d/distance(a, other);
+                }
+            }
+        }
+        
+        return total;
+    }
+    
+    public double fitness(Area[] areas, Point2D p, int radius) {
+        // we want the areas to be close to radius from the specified point
+        
+        double f = 0;
+        
+        for (Area a : areas) {
+            double overlappingDistances = overlappingDistances(a, areas);
+            if (overlappingDistances > 0) {
+                // lower fitness when areas overlap more
+                f -= overlappingDistances;
+            }
+            else {
+                // higher fitness when closer to radius
+                f += radius - Math.abs(distance(a, p) - radius);
+            }
+        }
+        
+        return f;
     }
     
     /**
@@ -109,9 +161,10 @@ public class CircleOfLife {
         int maxShapeWidth = 2000;
         int maxShapeHeight = 1000;
         
-        int outlineDiameter = 60000;
-        int maxWidth = 60000 + 10 * maxShapeWidth;
-        int maxHeight = 60000 + 10 * maxShapeHeight;
+        int outlineRadius = 30000;
+        int layers = 10;
+        int maxWidth = outlineRadius * 2 + layers * maxShapeWidth;
+        int maxHeight = outlineRadius * 2 + layers * maxShapeHeight;
         
         /**@TODO*/
     }
