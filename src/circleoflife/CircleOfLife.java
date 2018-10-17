@@ -134,7 +134,7 @@ public class CircleOfLife {
         return total;
     }
     
-    public double fitness(Area[] areas, Point2D p, int radius) {
+    public double energy(Area[] areas, Point2D p, int radius) {
         // we want the areas to be close to radius from the specified point
         
         double f = 0;
@@ -152,6 +152,27 @@ public class CircleOfLife {
         }
         
         return f;
+    }
+    
+    public void start(Area[] areas, Point2D p, int radius) {
+        // inital layout of areas around the circle
+    }
+    
+    public void neighbor(Area[] areas, Point2D p, int radius) {
+        // 1. switch/rotate several consecutive areas within a ring
+        // 2. switch ring order
+    }
+    
+    public void simulatedAnnealing(Area[] areas, Point2D p, int radius, int steps) {
+        /**@TODO
+            Let s = s0
+            For k = 0 through kmax (exclusive):
+            T ← temperature(k ∕ kmax)
+            Pick a random neighbour, snew ← neighbour(s)
+            If P(E(s), E(snew), T) ≥ random(0, 1):
+            s ← snew
+            Output: the final state s
+        */
     }
     
     /**
