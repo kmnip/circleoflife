@@ -17,52 +17,59 @@ import java.util.Random;
  * @author kmnip
  */
 public class CircleOfLife {
+    public static Random randNumGen = new Random();
 
-    public Area getRandomShape(int maxWidth, int maxHeight) {
+    public static Area getRandomShape(int maxWidth, int maxHeight, int reshapeIterations) {
         // initial area is a rectangle
         Area s = new Area(new Rectangle(0, 0, maxWidth, maxHeight));
         
         // create random rectangular slices from corners
         int maxSliceWidth = maxWidth/2;
         int maxSliceHeight = maxHeight/2;
-        Random r = new Random();
         int w,h;
-        int iterations = 2;
         
-        for (int i=0; i<iterations; ++i) {
+        for (int i=0; i<reshapeIterations; ++i) {
             // top left corner
-            w = r.nextInt(maxSliceWidth);
-            h = r.nextInt(maxSliceHeight);                
+            w = randNumGen.nextInt(maxSliceWidth);
+            h = randNumGen.nextInt(maxSliceHeight);                
             s.subtract(new Area(new Rectangle(0, 0, w, h)));
 
             // top right corner
-            w = r.nextInt(maxSliceWidth);
-            h = r.nextInt(maxSliceHeight);
+            w = randNumGen.nextInt(maxSliceWidth);
+            h = randNumGen.nextInt(maxSliceHeight);
             s.subtract(new Area(new Rectangle(maxWidth-w, 0, w, h)));
 
             // bottom right corner
-            w = r.nextInt(maxSliceWidth);
-            h = r.nextInt(maxSliceHeight);
+            w = randNumGen.nextInt(maxSliceWidth);
+            h = randNumGen.nextInt(maxSliceHeight);
             s.subtract(new Area(new Rectangle(maxWidth-w, maxHeight-h, w, h)));
 
             // bottom left corner
-            w = r.nextInt(maxSliceWidth);
-            h = r.nextInt(maxSliceHeight);
+            w = randNumGen.nextInt(maxSliceWidth);
+            h = randNumGen.nextInt(maxSliceHeight);
             s.subtract(new Area(new Rectangle(0, maxHeight-h, w, h)));
         }
         
         return s;
     }
     
-    public void rotateShapeForward(Area a) {
-        rotateShape(a, 1);
+    public static void move(Area a, Point2D p) {
+        // move area's midpoint to given point
+        AffineTransform t = new AffineTransform();
+        Rectangle r = a.getBounds();
+        t.translate(p.getX() - r.getCenterX(), p.getY() - r.getCenterY());
+        a.transform(t);
     }
     
-    public void rotateShapeBackward(Area a) {
-        rotateShape(a, 3);
+    public static void rotateForward(Area a) {
+        rotate(a, 1);
     }
     
-    public void rotateShape(Area a, int numQuadrants) {
+    public static void rotateBackward(Area a) {
+        rotate(a, 3);
+    }
+    
+    public static void rotate(Area a, int numQuadrants) {
         Rectangle r = a.getBounds();
         
         AffineTransform at = new AffineTransform();
@@ -71,7 +78,7 @@ public class CircleOfLife {
         a.transform(at);
     }
     
-    public boolean hasOverlap(Area a1, Area a2) {
+    public static boolean hasOverlap(Area a1, Area a2) {
         if (a1.intersects(a2.getBounds2D())) {
             // Note that rectangular bounds are an overestimate!
             
@@ -89,8 +96,8 @@ public class CircleOfLife {
         return false;
     }
     
-    public double distance(Area a1, Area a2) {
-        // distance between center points
+    public static double distance(Area a1, Area a2) {
+        // distance between center points of 2 areas
         
         Rectangle b1 = a1.getBounds();
         Rectangle b2 = a2.getBounds();
@@ -99,13 +106,15 @@ public class CircleOfLife {
         return c1.distance(b2.getCenterX(), b2.getCenterY());
     }
     
-    public double distance(Area a, Point2D p) {
+    public static double distance(Area a, Point2D p) {
+        // distance between center point of area to point
+        
         Rectangle b = a.getBounds();
         Point2D c = new Point2D.Double(b.getCenterX(), b.getCenterY());
         return c.distance(p);
     }
     
-    public int numOverlaps(Area a, Area[] areas) {
+    public static int numOverlaps(Area a, Area[] areas) {
         int numOverlaps = 0;
         
         for (Area other : areas) {
@@ -119,7 +128,7 @@ public class CircleOfLife {
         return numOverlaps;
     }
     
-    private double overlappingDistances(Area a, Area[] areas) {
+    private static double overlappingDistances(Area a, Area[] areas) {
         double total = 0;
         
         for (Area other : areas) {
@@ -134,36 +143,41 @@ public class CircleOfLife {
         return total;
     }
     
-    public double energy(Area[] areas, Point2D p, int radius) {
-        // we want the areas to be close to radius from the specified point
-        
-        double f = 0;
-        
+    public static double energy(Area[] areas, Point2D p) {
+        double e = 0;
         for (Area a : areas) {
-            double overlappingDistances = overlappingDistances(a, areas);
-            if (overlappingDistances > 0) {
-                // lower fitness when areas overlap more
-                f -= overlappingDistances;
-            }
-            else {
-                // higher fitness when closer to radius
-                f += radius - Math.abs(distance(a, p) - radius);
-            }
+            e += 1/distance(a, p);
         }
+        return e;
+    }
+    
+    public static void layout(Area[] areas, Point2D p, int radius) {
+        // layout of areas around the circle
         
-        return f;
     }
     
-    public void start(Area[] areas, Point2D p, int radius) {
-        // inital layout of areas around the circle
+    public static Area[] neighbor(Area[] areas, Point2D p, int radius) {        
+        int num = areas.length;
+        
+        Area[] clone = new Area[num];
+        for (int i=0; i<num; ++i) {
+            clone[i] = (Area) areas[i].clone();
+        }
+
+        // switch random pair of areas
+        int a = randNumGen.nextInt(num);
+        int b = randNumGen.nextInt(num);
+        
+        Area tmp = clone[a];
+        clone[a] = clone[b];
+        clone[b] = tmp;
+        
+        layout(clone, p, radius);
+        
+        return clone;
     }
     
-    public void neighbor(Area[] areas, Point2D p, int radius) {
-        // 1. switch/rotate several consecutive areas within a ring
-        // 2. switch ring order
-    }
-    
-    public void simulatedAnnealing(Area[] areas, Point2D p, int radius, int steps) {
+    public static void simulatedAnnealing(Area[] areas, Point2D p, int radius, int steps) {
         /**@TODO
             Let s = s0
             For k = 0 through kmax (exclusive):
@@ -178,14 +192,31 @@ public class CircleOfLife {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) {        
+    public static void main(String[] args) {
+        // max dimensions of each shape
         int maxShapeWidth = 2000;
         int maxShapeHeight = 1000;
+        int maxShapeDiagonal = (int) Math.ceil(Math.sqrt(Math.pow(maxShapeWidth, 2) + Math.pow(maxShapeHeight, 2)));
         
-        int outlineRadius = 30000;
+        int reshapeIterations = 2;
+        int gap = 10;
+        
+        int layoutBaseRadius = 30000;
         int layers = 10;
-        int maxWidth = outlineRadius * 2 + layers * maxShapeWidth;
-        int maxHeight = outlineRadius * 2 + layers * maxShapeHeight;
+        int maxWidth = layoutBaseRadius * 2 + layers * maxShapeDiagonal + (layers - 1) * gap;
+        int maxHeight = layoutBaseRadius * 2 + layers * maxShapeDiagonal + (layers - 1) * gap;
+        
+        // calculate the number of shapes to generate for X layers
+        int numShapes = 0;
+        for (int i=0; i<layers; ++i) {
+            numShapes += Math.floor(2 * Math.PI * (layoutBaseRadius + maxShapeDiagonal*i)/maxShapeDiagonal);
+        }
+        
+        // generate random shapes
+        Area[] shapes = new Area[numShapes];
+        for (int i=0; i<numShapes; ++i) {
+            shapes[i] = getRandomShape(maxShapeWidth, maxShapeHeight, reshapeIterations);
+        }
         
         /**@TODO*/
     }
