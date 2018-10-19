@@ -154,6 +154,41 @@ public class CircleOfLife {
     public static void layout(Area[] areas, Point2D p, int radius) {
         // layout of areas around the circle
         
+        Area layerStart = null;
+        Area lastShape = null;
+        
+        for (Area a : areas) {
+            if (layerStart == null) {
+                layerStart = a;
+            }
+            else {
+                
+            }
+            
+            lastShape = a;
+        }
+    }
+    
+    public static int checkQuadrant(Point2D origin, Point2D p) {
+        double ox = origin.getX();
+        double oy = origin.getY();
+        double px = p.getX();
+        double py = p.getY();
+        
+        if (py < oy && px >= ox) {
+            return 1;
+        }
+        else if (py >= oy && px >= ox) {
+            return 2;
+        }
+        else if (py >= oy && px <= ox) {
+            return 3;
+        }
+        else if (py <= oy && px <= ox) {
+            return 4;
+        }
+        
+        return -1;
     }
     
     public static Area[] neighbor(Area[] areas, Point2D p, int radius) {        
