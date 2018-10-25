@@ -62,6 +62,37 @@ public class CircleOfLife {
         a.transform(t);
     }
     
+    private static void moveSW(Area a, Point2D p) {
+        // move area's southwest corner to given point
+        AffineTransform t = new AffineTransform();
+        Rectangle r = a.getBounds();
+        t.translate(p.getX(), p.getY() - r.height);
+        a.transform(t);
+    }
+
+    private static void moveNW(Area a, Point2D p) {
+        // move area's northwest corner to given point
+        AffineTransform t = new AffineTransform();
+        t.translate(p.getX(), p.getY());
+        a.transform(t);
+    }
+    
+    private static void moveNE(Area a, Point2D p) {
+        // move area's northeast corner to given point
+        AffineTransform t = new AffineTransform();
+        Rectangle r = a.getBounds();
+        t.translate(p.getX() - r.width, p.getY());
+        a.transform(t);
+    }
+
+    private static void moveSE(Area a, Point2D p) {
+        // move area's southeast corner to given point
+        AffineTransform t = new AffineTransform();
+        Rectangle r = a.getBounds();
+        t.translate(p.getX() - r.width, p.getY() - r.height);
+        a.transform(t);
+    }
+    
     public static void rotateForward(Area a) {
         rotate(a, 1);
     }
@@ -99,6 +130,11 @@ public class CircleOfLife {
         }
         
         return false;
+    }
+    
+    public static double diagonal(Area a) {
+        Rectangle b = a.getBounds();
+        return Math.sqrt(Math.pow(b.width, 2) + Math.pow(b.height, 2));
     }
     
     public static double distance(Area a1, Area a2) {
@@ -156,17 +192,29 @@ public class CircleOfLife {
         return e;
     }
     
+    /*
+        Q1        Q2        Q3        Q4
+        
+         ^ _       o---->    <----o      _  ^
+         ||_|      |\_          _/|     |_| |
+         |/        ||_|        |_||        \|
+         o---->    v              v    <----o
+    */
     public static void layout(Area[] areas, Point2D origin, int radius) {
         // layout areas around the circle
 
-        ArrayDeque<Area> members = new ArrayDeque<>();
+        int currentRadius = radius;
+        ArrayDeque<Area> ringMembers = new ArrayDeque<>();
+        
         Area lastArea = null;
         int lastQuadrant = -1;
-        int currentRadius = radius;
-        int maxDiagonal = -1;
+        
+        int maxAreaDiagonal = -1;
         
         for (Area a : areas) {
             if (lastArea == null) {
+                lastQuadrant = 1;
+                
                 // first area in the ring
                 
             }
@@ -182,6 +230,27 @@ public class CircleOfLife {
                 
                 
             }
+        }
+    }
+    
+    /*
+        Q1
+        
+         ^ _
+         ||_|
+         |/
+         o---->
+    */
+    private static void layoutQ1(Area a, Point2D origin, int radius, Area lastArea) {
+        if (lastArea == null) {
+            Point2D p = new Point2D.Double(origin.getX(), origin.getY() - radius);
+            moveSW(a, p);
+        }
+        else {
+            Rectangle lastAreaBound = lastArea.getBounds();
+            //@TODO check if over 45 degree
+            Point2D p = new Point2D.Double(lastAreaBound.x+lastAreaBound.width, origin.getY() - Math.sqrt(Math.pow(radius, 2) - Math.pow(lastAreaBound.width, 2)));
+            moveSW(a, p);            
         }
     }
     
