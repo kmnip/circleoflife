@@ -10,6 +10,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
+import java.util.ArrayDeque;
 import java.util.Random;
 
 /**
@@ -147,29 +148,40 @@ public class CircleOfLife {
         return total;
     }
     
-    public static double energy(Area[] areas, Point2D p) {
+    public static double energy(Area[] areas, Point2D origin) {
         double e = 0;
         for (Area a : areas) {
-            e += 1/distance(a, p);
+            e += 1/distance(a, origin);
         }
         return e;
     }
     
-    public static void layout(Area[] areas, Point2D p, int radius) {
-        // layout of areas around the circle
-        
-        Area layerStart = null;
-        Area lastShape = null;
+    public static void layout(Area[] areas, Point2D origin, int radius) {
+        // layout areas around the circle
+
+        ArrayDeque<Area> members = new ArrayDeque<>();
+        Area lastArea = null;
+        int lastQuadrant = -1;
+        int currentRadius = radius;
+        int maxDiagonal = -1;
         
         for (Area a : areas) {
-            if (layerStart == null) {
-                layerStart = a;
-            }
-            else {
+            if (lastArea == null) {
+                // first area in the ring
                 
             }
-            
-            lastShape = a;
+            else {
+                // check quadrant
+                
+                // calculate coordinate of corner point
+                
+                // if in quadrant 4, check whether there is enough room
+                // if no room, increase radius, and start a new ring
+                
+                // assign area to point
+                
+                
+            }
         }
     }
     
@@ -179,7 +191,7 @@ public class CircleOfLife {
         double px = p.getX();
         double py = p.getY();
         
-        if (py < oy && px >= ox) {
+        if (py <= oy && px >= ox) {
             return 1;
         }
         else if (py >= oy && px >= ox) {
@@ -195,7 +207,7 @@ public class CircleOfLife {
         return -1;
     }
     
-    public static Area[] neighbor(Area[] areas, Point2D p, int radius) {        
+    public static Area[] neighbor(Area[] areas, Point2D origin, int radius) {        
         int num = areas.length;
         
         Area[] clone = new Area[num];
@@ -211,7 +223,7 @@ public class CircleOfLife {
         clone[a] = clone[b];
         clone[b] = tmp;
         
-        layout(clone, p, radius);
+        layout(clone, origin, radius);
         
         return clone;
     }
