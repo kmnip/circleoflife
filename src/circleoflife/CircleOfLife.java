@@ -78,6 +78,10 @@ public class CircleOfLife {
         a.transform(at);
     }
     
+    public static boolean hasSimpleOverlap(Area a1, Area a2) {
+        return a1.intersects(a2.getBounds2D());
+    }
+    
     public static boolean hasOverlap(Area a1, Area a2) {
         if (a1.intersects(a2.getBounds2D())) {
             // Note that rectangular bounds are an overestimate!
