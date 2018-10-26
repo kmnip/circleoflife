@@ -11,6 +11,7 @@ import java.awt.geom.Area;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Random;
 
 /**
@@ -203,32 +204,61 @@ public class CircleOfLife {
     public static void layout(Area[] areas, Point2D origin, int radius) {
         // layout areas around the circle
 
-        int currentRadius = radius;
-        ArrayDeque<Area> ringMembers = new ArrayDeque<>();
+        ArrayList<ArrayDeque<Area>> layers = new ArrayList<>();
+        ArrayDeque<Area> ringMembers = null;
         
         Area lastArea = null;
         int lastQuadrant = -1;
         
-        int maxAreaDiagonal = -1;
+        double maxAreaDiagonal = 0;
+        int currentRadius = radius;
         
         for (Area a : areas) {
-            if (lastArea == null) {
-                lastQuadrant = 1;
-                
+            if (lastQuadrant == -1) {
                 // first area in the ring
                 
+                lastQuadrant = 1;
+                currentRadius += maxAreaDiagonal;
+                layoutQ1(a, origin, currentRadius, null);
+                
+                ringMembers = new ArrayDeque<>();
+                ringMembers.add(a);
+                
+                layers.add(ringMembers);
+                lastArea = a;
+                maxAreaDiagonal = diagonal(a);
             }
             else {
                 // check quadrant
+                switch (lastQuadrant) {
+                    case 1:
+                        layoutQ1(a, origin, currentRadius, lastArea);
+                        if (inQuadrant2(a, origin)) {
+                            lastQuadrant = 2;
+                        }
+                        break;
+                    case 2:
+                        layoutQ2(a, origin, currentRadius, lastArea);
+                        if (inQuadrant3(a, origin)) {
+                            lastQuadrant = 3;
+                        }                        
+                        break;
+                    case 3:
+                        layoutQ3(a, origin, currentRadius, lastArea);
+                        if (inQuadrant4(a, origin)) {
+                            lastQuadrant = 4;
+                        }
+                        break;
+                    case 4:
+                        layoutQ4(a, origin, currentRadius, lastArea);
+                        if (inQuadrant1(a, origin)) {
+                            lastQuadrant = -1;
+                        }
+                        break;
+                }
                 
-                // calculate coordinate of corner point
-                
-                // if in quadrant 4, check whether there is enough room
-                // if no room, increase radius, and start a new ring
-                
-                // assign area to point
-                
-                
+                lastArea = a;
+                maxAreaDiagonal = Math.max(maxAreaDiagonal, diagonal(a));
             }
         }
     }
