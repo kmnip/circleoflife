@@ -219,59 +219,55 @@ public class CircleOfLife {
         ArrayDeque<Area> ringMembers = new ArrayDeque<>();
         layers.add(ringMembers);
         
-        Area lastArea = null;
-        int lastQuadrant = -1;
-        
-        double maxAreaDiagonal = 0;
         int currentRadius = radius;
+        int lastQuadrant = 1;
+        Area lastArea = areas[0];
+        layoutQ1(lastArea, origin, currentRadius, null);
+        ringMembers.add(lastArea);
+        double maxAreaDiagonal = diagonal(lastArea);
         
-        for (Area a : areas) {
-            if (lastQuadrant == -1) {
-                // first area in the ring
-                
-                lastQuadrant = 1;
-                currentRadius += maxAreaDiagonal;
-                layoutQ1(a, origin, currentRadius, null);
-            }
-            else {
-                // check quadrant
-                switch (lastQuadrant) {
-                    case 1:
-                        layoutQ1(a, origin, currentRadius, lastArea);
-                        if (inQuadrant2(a, origin)) {
-                            lastQuadrant = 2;
-                        }
-                        break;
-                    case 2:
-                        layoutQ2(a, origin, currentRadius, lastArea);
-                        if (inQuadrant3(a, origin)) {
-                            lastQuadrant = 3;
-                        }                        
-                        break;
-                    case 3:
-                        layoutQ3(a, origin, currentRadius, lastArea);
-                        if (inQuadrant4(a, origin)) {
-                            lastQuadrant = 4;
-                        }
-                        break;
-                    case 4:
-                        layoutQ4(a, origin, currentRadius, lastArea);
-                        if (inQuadrant1(a, origin)) {
-                            lastQuadrant = 1;
-                            currentRadius += maxAreaDiagonal;
-                            layoutQ1(a, origin, currentRadius, null);
+        Area a;
+        int numAreas = areas.length;
+        for (int i=1; i<numAreas; ++i) {
+            a = areas[i];
+            
+            // check quadrant
+            switch (lastQuadrant) {
+                case 1:
+                    layoutQ1(a, origin, currentRadius, lastArea);
+                    if (inQuadrant2(a, origin)) {
+                        lastQuadrant = 2;
+                    }
+                    break;
+                case 2:
+                    layoutQ2(a, origin, currentRadius, lastArea);
+                    if (inQuadrant3(a, origin)) {
+                        lastQuadrant = 3;
+                    }                        
+                    break;
+                case 3:
+                    layoutQ3(a, origin, currentRadius, lastArea);
+                    if (inQuadrant4(a, origin)) {
+                        lastQuadrant = 4;
+                    }
+                    break;
+                case 4:
+                    layoutQ4(a, origin, currentRadius, lastArea);
+                    if (inQuadrant1(a, origin)) {
+                        lastQuadrant = 1;
+                        currentRadius += maxAreaDiagonal;
+                        layoutQ1(a, origin, currentRadius, null);
 
-                            ringMembers = new ArrayDeque<>();
-                            layers.add(ringMembers);
-                            maxAreaDiagonal = 0;
-                        }
-                        break;
-                }
-                
-                lastArea = a;
-                ringMembers.add(a);
-                maxAreaDiagonal = Math.max(maxAreaDiagonal, diagonal(a));
+                        ringMembers = new ArrayDeque<>();
+                        layers.add(ringMembers);
+                        maxAreaDiagonal = 0;
+                    }
+                    break;
             }
+
+            lastArea = a;
+            ringMembers.add(a);
+            maxAreaDiagonal = Math.max(maxAreaDiagonal, diagonal(a));
         }
     }
     
