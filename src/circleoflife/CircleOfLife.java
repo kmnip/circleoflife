@@ -69,7 +69,7 @@ public class CircleOfLife {
         // move area's midpoint to given point
         AffineTransform t = new AffineTransform();
         Rectangle r = a.getBounds();
-        t.translate(p.getX() - r.getCenterX(), p.getY() - r.getCenterY());
+        t.translate(p.getX() - r.x - r.getCenterX(), p.getY() - r.y - r.getCenterY());
         a.transform(t);
     }
     
@@ -77,14 +77,15 @@ public class CircleOfLife {
         // move area's southwest corner to given point
         AffineTransform t = new AffineTransform();
         Rectangle r = a.getBounds();
-        t.translate(p.getX(), p.getY() - r.height);
+        t.translate(p.getX() - r.x, p.getY() - r.y - r.height);
         a.transform(t);
     }
 
     private static void moveNW(Area a, Point2D p) {
         // move area's northwest corner to given point
         AffineTransform t = new AffineTransform();
-        t.translate(p.getX(), p.getY());
+        Rectangle r = a.getBounds();
+        t.translate(p.getX() - r.x, p.getY() - r.y);
         a.transform(t);
     }
     
@@ -92,7 +93,7 @@ public class CircleOfLife {
         // move area's northeast corner to given point
         AffineTransform t = new AffineTransform();
         Rectangle r = a.getBounds();
-        t.translate(p.getX() - r.width, p.getY());
+        t.translate(p.getX() - r.x - r.width, p.getY() - r.y);
         a.transform(t);
     }
 
@@ -100,7 +101,7 @@ public class CircleOfLife {
         // move area's southeast corner to given point
         AffineTransform t = new AffineTransform();
         Rectangle r = a.getBounds();
-        t.translate(p.getX() - r.width, p.getY() - r.height);
+        t.translate(p.getX() - r.x - r.width, p.getY() - r.y - r.height);
         a.transform(t);
     }
     
@@ -215,7 +216,8 @@ public class CircleOfLife {
         // layout areas around the circle
 
         ArrayList<ArrayDeque<Area>> layers = new ArrayList<>();
-        ArrayDeque<Area> ringMembers = null;
+        ArrayDeque<Area> ringMembers = new ArrayDeque<>();
+        layers.add(ringMembers);
         
         Area lastArea = null;
         int lastQuadrant = -1;
@@ -230,13 +232,6 @@ public class CircleOfLife {
                 lastQuadrant = 1;
                 currentRadius += maxAreaDiagonal;
                 layoutQ1(a, origin, currentRadius, null);
-                
-                ringMembers = new ArrayDeque<>();
-                ringMembers.add(a);
-                
-                layers.add(ringMembers);
-                lastArea = a;
-                maxAreaDiagonal = diagonal(a);
             }
             else {
                 // check quadrant
@@ -262,12 +257,19 @@ public class CircleOfLife {
                     case 4:
                         layoutQ4(a, origin, currentRadius, lastArea);
                         if (inQuadrant1(a, origin)) {
-                            lastQuadrant = -1;
+                            lastQuadrant = 1;
+                            currentRadius += maxAreaDiagonal;
+                            layoutQ1(a, origin, currentRadius, null);
+
+                            ringMembers = new ArrayDeque<>();
+                            layers.add(ringMembers);
+                            maxAreaDiagonal = 0;
                         }
                         break;
                 }
                 
                 lastArea = a;
+                ringMembers.add(a);
                 maxAreaDiagonal = Math.max(maxAreaDiagonal, diagonal(a));
             }
         }
@@ -546,17 +548,17 @@ public class CircleOfLife {
      */
     public static void main(String[] args) {
         // max dimensions of each shape
-        int maxShapeWidth = 20;
-        int maxShapeHeight = 10;
+        int maxShapeWidth = 200;
+        int maxShapeHeight = 100;
         int maxShapeDiagonal = (int) Math.ceil(Math.sqrt(Math.pow(maxShapeWidth, 2) + Math.pow(maxShapeHeight, 2)));
         
         int reshapeIterations = 2;
         int gap = 10;
         
-        int layoutBaseRadius = 300;
+        int layoutBaseRadius = 3000;
         int layers = 10;
-        int maxWidth = layoutBaseRadius * 2 + layers * maxShapeDiagonal + (layers - 1) * gap;
-        int maxHeight = layoutBaseRadius * 2 + layers * maxShapeDiagonal + (layers - 1) * gap;
+        int maxWidth = layoutBaseRadius * 2 + 2 * layers * maxShapeDiagonal + (layers - 1) * gap;
+        int maxHeight = layoutBaseRadius * 2 + 2 * layers * maxShapeDiagonal + (layers - 1) * gap;
         
         // calculate the number of shapes to generate for X layers
         int numShapes = 0;
@@ -567,8 +569,8 @@ public class CircleOfLife {
         // generate random shapes
         Area[] shapes = new Area[numShapes];
         for (int i=0; i<numShapes; ++i) {
-            //shapes[i] = getRandomShape(maxShapeWidth, maxShapeHeight, reshapeIterations);
-            shapes[i] = new Area(new Rectangle(0, 0, maxShapeWidth, maxShapeHeight));
+            shapes[i] = getRandomShape(maxShapeWidth, maxShapeHeight, reshapeIterations);
+            //shapes[i] = new Area(new Rectangle(0, 0, maxShapeWidth, maxShapeHeight));
         }
         
         // layout shapes in circular manner
