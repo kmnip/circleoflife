@@ -248,10 +248,202 @@ public class CircleOfLife {
         }
         else {
             Rectangle lastAreaBound = lastArea.getBounds();
-            //@TODO check if over 45 degree
-            Point2D p = new Point2D.Double(lastAreaBound.x+lastAreaBound.width, origin.getY() - Math.sqrt(Math.pow(radius, 2) - Math.pow(lastAreaBound.width, 2)));
-            moveSW(a, p);            
+            Rectangle thisAreaBound = a.getBounds();
+            double ox = origin.getX();
+            double oy = origin.getY();
+            double radiusSquare = Math.pow(radius, 2);
+            
+            // Option A: put area NEXT to the previous area
+            double x = lastAreaBound.getMaxX();
+            double y = oy - Math.sqrt(radiusSquare - Math.pow(Math.abs(x-ox), 2));
+            Point2D p1 = new Point2D.Double(x, y);
+            
+            // Option B: put area UNDER the previous area
+            y = lastAreaBound.getMaxY() + thisAreaBound.height;
+            x = ox + Math.sqrt(radiusSquare - Math.pow(Math.abs(oy-y), 2));
+            Point2D p2 = new Point2D.Double(x, y);
+            
+            // move to the closest option
+            if (distance(lastArea, p1) <= distance(lastArea, p2)) {
+                moveSW(a, p1);
+            }
+            else {
+                moveSW(a, p2);
+            }
         }
+    }
+    
+    /*
+        Q2
+        
+        o---->
+        |\_
+        ||_|
+        v
+    */
+    private static void layoutQ2(Area a, Point2D origin, int radius, Area lastArea) {
+        if (lastArea == null) {
+            Point2D p = new Point2D.Double(origin.getX() + radius, origin.getY());
+            moveNW(a, p);
+        }
+        else {
+            Rectangle lastAreaBound = lastArea.getBounds();
+            Rectangle thisAreaBound = a.getBounds();
+            double ox = origin.getX();
+            double oy = origin.getY();
+            double radiusSquare = Math.pow(radius, 2);
+            
+            // Option A: put area UNDER the previous area
+            double y = lastAreaBound.getMaxY();
+            double x = ox + Math.sqrt(radiusSquare - Math.pow(Math.abs(y-oy), 2));
+            Point2D p1 = new Point2D.Double(x, y);
+            
+            // Option B: put area NEXT to the previous area
+            x = lastAreaBound.x - thisAreaBound.width;
+            y = oy + Math.sqrt(radiusSquare - Math.pow(Math.abs(x-oy), 2));
+            Point2D p2 = new Point2D.Double(x, y);
+            
+            // move to the closest option
+            if (distance(lastArea, p1) <= distance(lastArea, p2)) {
+                moveNW(a, p1);
+            }
+            else {
+                moveNW(a, p2);
+            }
+        }
+    }
+    
+    /*
+        Q3
+        
+         <----o
+            _/|
+           |_||
+              v
+    */
+    private static void layoutQ3(Area a, Point2D origin, int radius, Area lastArea){
+        if (lastArea == null) {
+            Point2D p = new Point2D.Double(origin.getX(), origin.getY() + radius);
+            moveNE(a, p);
+        }
+        else {
+            Rectangle lastAreaBound = lastArea.getBounds();
+            Rectangle thisAreaBound = a.getBounds();
+            double ox = origin.getX();
+            double oy = origin.getY();
+            double radiusSquare = Math.pow(radius, 2);
+            
+            // Option A: put area NEXT to the previous area
+            
+            double x = lastAreaBound.x;
+            double y = oy + Math.sqrt(radiusSquare - Math.pow(Math.abs(ox-x), 2));
+            Point2D p1 = new Point2D.Double(x, y);
+            
+            // Option B: put area ABOVE the previous area
+            y = lastAreaBound.y - thisAreaBound.height;
+            x = ox - Math.sqrt(radiusSquare - Math.pow(Math.abs(y-oy), 2));
+            Point2D p2 = new Point2D.Double(x, y);
+            
+            // move to the closest option
+            if (distance(lastArea, p1) <= distance(lastArea, p2)) {
+                moveNE(a, p1);
+            }
+            else {
+                moveNE(a, p2);
+            }
+        }
+    }
+    
+    /*
+        Q4
+        
+           _  ^
+          |_| |
+             \|
+         <----o
+    */
+    private static void layoutQ4(Area a, Point2D origin, int radius, Area lastArea){
+        if (lastArea == null) {
+            Point2D p = new Point2D.Double(origin.getX()-radius, origin.getY());
+            moveSE(a, p);
+        }
+        else {
+            Rectangle lastAreaBound = lastArea.getBounds();
+            Rectangle thisAreaBound = a.getBounds();
+            double ox = origin.getX();
+            double oy = origin.getY();
+            double radiusSquare = Math.pow(radius, 2);
+            
+            // Option A: put area ABOVE the previous area
+            double y = lastAreaBound.y;
+            double x = Math.sqrt(radiusSquare - Math.pow(Math.abs(oy-y), 2));
+            Point2D p1 = new Point2D.Double(x, y);
+            
+            // Option B: put area NEXT to the previous area
+            x = lastAreaBound.getMaxX() + thisAreaBound.width;
+            y = Math.sqrt(radiusSquare - Math.pow(Math.abs(ox-x), 2));
+            Point2D p2 = new Point2D.Double(x, y);
+            
+            // move to the closest option
+            if (distance(lastArea, p1) <= distance(lastArea, p2)) {
+                moveSE(a, p1);
+            }
+            else {
+                moveSE(a, p2);
+            }
+        }
+    }
+    
+    private static boolean inQuadrant1(Area a, Point2D origin) {
+        double ox = origin.getX();
+        double oy = origin.getY();
+        Rectangle b = a.getBounds();
+        
+        double x = b.x;
+        double y = b.y;
+        double maxX = b.getMaxX();
+        double maxY = b.getMaxY();
+        
+        return (y <= oy && x >= ox) || (y <= oy && maxX >= ox) || (maxY <= oy && maxX >= ox) || (maxY <= oy && x >= ox); 
+    }
+    
+    private static boolean inQuadrant2(Area a, Point2D origin) {
+        double ox = origin.getX();
+        double oy = origin.getY();
+        Rectangle b = a.getBounds();
+        
+        double x = b.x;
+        double y = b.y;
+        double maxX = b.getMaxX();
+        double maxY = b.getMaxY();
+        
+        return (y >= oy && x >= ox) || (y >= oy && maxX >= ox) || (maxY >= oy && maxX >= ox) || (maxY >= oy && x >= ox);
+    }
+    
+    private static boolean inQuadrant3(Area a, Point2D origin) {
+        double ox = origin.getX();
+        double oy = origin.getY();
+        Rectangle b = a.getBounds();
+        
+        double x = b.x;
+        double y = b.y;
+        double maxX = b.getMaxX();
+        double maxY = b.getMaxY();
+        
+        return (y >= oy && x <= ox) || (y >= oy && maxX <= ox) || (maxY >= oy && maxX <= ox) || (maxY >= oy && x <= ox);
+    }
+
+    private static boolean inQuadrant4(Area a, Point2D origin) {
+        double ox = origin.getX();
+        double oy = origin.getY();
+        Rectangle b = a.getBounds();
+        
+        double x = b.x;
+        double y = b.y;
+        double maxX = b.getMaxX();
+        double maxY = b.getMaxY();
+        
+        return (y <= oy && x <= ox) || (y <= oy && maxX <= ox) || (maxY <= oy && maxX <= ox) || (maxY <= oy && x <= ox);
     }
     
     public static int checkQuadrant(Point2D origin, Point2D p) {
