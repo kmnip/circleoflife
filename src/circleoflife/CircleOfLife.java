@@ -5,14 +5,24 @@
  */
 package circleoflife;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 
 /**
  *
@@ -406,12 +416,12 @@ public class CircleOfLife {
             
             // Option A: put area ABOVE the previous area
             double y = lastAreaBound.y;
-            double x = Math.sqrt(radiusSquare - Math.pow(Math.abs(oy-y), 2));
+            double x = origin.getX() - Math.sqrt(radiusSquare - Math.pow(Math.abs(oy-y), 2));
             Point2D p1 = new Point2D.Double(x, y);
             
             // Option B: put area NEXT to the previous area
             x = lastAreaBound.getMaxX() + thisAreaBound.width;
-            y = Math.sqrt(radiusSquare - Math.pow(Math.abs(ox-x), 2));
+            y = origin.getY() - Math.sqrt(radiusSquare - Math.pow(Math.abs(ox-x), 2));
             Point2D p2 = new Point2D.Double(x, y);
             
             // move to the closest option
@@ -536,14 +546,14 @@ public class CircleOfLife {
      */
     public static void main(String[] args) {
         // max dimensions of each shape
-        int maxShapeWidth = 2000;
-        int maxShapeHeight = 1000;
+        int maxShapeWidth = 20;
+        int maxShapeHeight = 10;
         int maxShapeDiagonal = (int) Math.ceil(Math.sqrt(Math.pow(maxShapeWidth, 2) + Math.pow(maxShapeHeight, 2)));
         
         int reshapeIterations = 2;
         int gap = 10;
         
-        int layoutBaseRadius = 30000;
+        int layoutBaseRadius = 300;
         int layers = 10;
         int maxWidth = layoutBaseRadius * 2 + layers * maxShapeDiagonal + (layers - 1) * gap;
         int maxHeight = layoutBaseRadius * 2 + layers * maxShapeDiagonal + (layers - 1) * gap;
@@ -557,10 +567,34 @@ public class CircleOfLife {
         // generate random shapes
         Area[] shapes = new Area[numShapes];
         for (int i=0; i<numShapes; ++i) {
-            shapes[i] = getRandomShape(maxShapeWidth, maxShapeHeight, reshapeIterations);
+            //shapes[i] = getRandomShape(maxShapeWidth, maxShapeHeight, reshapeIterations);
+            shapes[i] = new Area(new Rectangle(0, 0, maxShapeWidth, maxShapeHeight));
         }
         
-        /**@TODO*/
+        // layout shapes in circular manner
+        Point2D origin = new Point2D.Double(maxWidth/2, maxHeight/2);
+        layout(shapes, origin, layoutBaseRadius);
+        
+        // output to an image
+        BufferedImage bi = new BufferedImage(maxWidth, maxHeight, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D ig2 = bi.createGraphics();
+        ig2.setPaint(Color.black);
+        
+        // draw layout circle
+        Shape circle = new Ellipse2D.Double(origin.getX()-layoutBaseRadius, origin.getY()-layoutBaseRadius, 2*layoutBaseRadius, 2*layoutBaseRadius);
+        ig2.draw(circle);
+        
+        // fill all area
+        for (Area s : shapes) {
+            ig2.fill(s);
+        }
+        
+        // write image
+        try {
+            ImageIO.write(bi, "PNG", new File("/home/kmnip/sandbox/circleOfLife.png"));
+        } catch (IOException ex) {
+            Logger.getLogger(CircleOfLife.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
 }
