@@ -505,7 +505,7 @@ public class CircleOfLife {
         
         return -1;
     }
-    
+        
     public static Area[] neighbor(Area[] areas, Point2D origin, int radius) {        
         int num = areas.length;
         
@@ -514,29 +514,52 @@ public class CircleOfLife {
             clone[i] = (Area) areas[i].clone();
         }
 
-        // switch random pair of areas
-        int a = randNumGen.nextInt(num);
-        int b = randNumGen.nextInt(num);
-        
-        Area tmp = clone[a];
-        clone[a] = clone[b];
-        clone[b] = tmp;
+        if (randNumGen.nextInt(2) == 0) {
+            // rotate a random area
+            int a = randNumGen.nextInt(num);
+            rotateForward(clone[a]);
+        }
+        else {
+            // switch random pair of areas
+            int a = randNumGen.nextInt(num);
+            int b = randNumGen.nextInt(num);
+
+            Area tmp = clone[a];
+            clone[a] = clone[b];
+            clone[b] = tmp;
+        }
         
         layout(clone, origin, radius);
         
         return clone;
     }
     
-    public static void simulatedAnnealing(Area[] areas, Point2D p, int radius, int steps) {
-        /**@TODO
+    public static Area[] simulatedAnnealing(Area[] areas, Point2D origin, int radius, int steps) {
+        /*
             Let s = s0
             For k = 0 through kmax (exclusive):
-            T ← temperature(k ∕ kmax)
-            Pick a random neighbour, snew ← neighbour(s)
-            If P(E(s), E(snew), T) ≥ random(0, 1):
-            s ← snew
+                T ← temperature(k ∕ kmax)
+                Pick a random neighbour, snew ← neighbour(s)
+                If P(E(s), E(snew), T) ≥ random(0, 1):
+                    s ← snew
             Output: the final state s
         */
+        
+        layout(areas, origin, radius);
+        Area[] bestState = areas;
+        double bestEnergy = energy(bestState, origin);
+        
+        Area[] currentState = bestState;
+        double currentEnergy = bestEnergy;
+        
+        for (int i=0; i<steps; ++i) {
+            Area[] newState = neighbor(currentState, origin, radius);
+            double newEnergy = energy(newState, origin);
+            
+            //@TODO
+        }
+        
+        return bestState;
     }
     
     /**
