@@ -256,7 +256,7 @@ public class CircleOfLife {
          |/        ||_|        |_||        \|
          o---->    v              v    <----o
     */
-    public static void layout(Area[] areas, Point2D origin, int radius) {
+    public static void layout(Area[] areas, Point2D origin, int radius, int gap) {
         // layout areas around the circle
 
         ArrayList<ArrayDeque<Area>> layers = new ArrayList<>();
@@ -266,7 +266,7 @@ public class CircleOfLife {
         int currentRadius = radius;
         int lastQuadrant = 1;
         Area lastArea = areas[0];
-        layoutQ1(lastArea, origin, currentRadius, null);
+        layoutQ1(lastArea, origin, currentRadius, null, gap);
         ringMembers.add(lastArea);
         double maxAreaDiagonal = diagonal(lastArea);
         
@@ -278,29 +278,29 @@ public class CircleOfLife {
             // check quadrant
             switch (lastQuadrant) {
                 case 1:
-                    layoutQ1(a, origin, currentRadius, lastArea);
+                    layoutQ1(a, origin, currentRadius, lastArea, gap);
                     if (inQuadrant2(a, origin)) {
                         lastQuadrant = 2;
                     }
                     break;
                 case 2:
-                    layoutQ2(a, origin, currentRadius, lastArea);
+                    layoutQ2(a, origin, currentRadius, lastArea, gap);
                     if (inQuadrant3(a, origin)) {
                         lastQuadrant = 3;
                     }                        
                     break;
                 case 3:
-                    layoutQ3(a, origin, currentRadius, lastArea);
+                    layoutQ3(a, origin, currentRadius, lastArea, gap);
                     if (inQuadrant4(a, origin)) {
                         lastQuadrant = 4;
                     }
                     break;
                 case 4:
-                    layoutQ4(a, origin, currentRadius, lastArea);
+                    layoutQ4(a, origin, currentRadius, lastArea, gap);
                     if (inQuadrant1(a, origin)) {
                         lastQuadrant = 1;
                         currentRadius += maxAreaDiagonal;
-                        layoutQ1(a, origin, currentRadius, null);
+                        layoutQ1(a, origin, currentRadius, null, gap);
 
                         ringMembers = new ArrayDeque<>();
                         layers.add(ringMembers);
@@ -323,7 +323,7 @@ public class CircleOfLife {
          |/
          o---->
     */
-    private static void layoutQ1(Area a, Point2D origin, int radius, Area lastArea) {
+    private static void layoutQ1(Area a, Point2D origin, int radius, Area lastArea, int gap) {
         if (lastArea == null) {
             Point2D p = new Point2D.Double(origin.getX(), origin.getY() - radius);
             moveSW(a, p);
@@ -336,12 +336,12 @@ public class CircleOfLife {
             double radiusSquare = Math.pow(radius, 2);
             
             // Option A: put area NEXT to the previous area
-            double x = lastAreaBound.getMaxX();
+            double x = lastAreaBound.getMaxX() + gap;
             double y = oy - Math.sqrt(radiusSquare - Math.pow(Math.abs(x-ox), 2));
             Point2D p1 = new Point2D.Double(x, y);
             
             // Option B: put area UNDER the previous area
-            y = lastAreaBound.getMaxY() + thisAreaBound.height;
+            y = lastAreaBound.getMaxY() + thisAreaBound.height + gap;
             x = ox + Math.sqrt(radiusSquare - Math.pow(Math.abs(oy-y), 2));
             Point2D p2 = new Point2D.Double(x, y);
             
@@ -351,7 +351,7 @@ public class CircleOfLife {
 
                 // inch back towards last area
                 Point2D lastPosition = p1;
-                x = lastAreaBound.getMaxX();
+                x = lastAreaBound.getMaxX() + gap;
                 while (true) {
                     --x;
                     y = oy - Math.sqrt(radiusSquare - Math.pow(Math.abs(x-ox), 2));
@@ -359,7 +359,11 @@ public class CircleOfLife {
                     moveSW(a, p1);
                     
                     if (hasOverlap(a, lastArea)) {
-                        moveSW(a, lastPosition);
+                        x = lastPosition.getX() + gap;
+                        y = oy - Math.sqrt(radiusSquare - Math.pow(Math.abs(x-ox), 2));
+                        p1 = new Point2D.Double(x, y);
+                        
+                        moveSW(a, p1);
                         break;
                     }
                     
@@ -371,7 +375,7 @@ public class CircleOfLife {
                 
                 // inch back towards last area
                 Point2D lastPosition = p2;
-                y = lastAreaBound.getMaxY() + thisAreaBound.height;
+                y = lastAreaBound.getMaxY() + thisAreaBound.height + gap;
                 while (true) {
                     --y;
                     x = ox + Math.sqrt(radiusSquare - Math.pow(Math.abs(oy-y), 2));
@@ -379,7 +383,11 @@ public class CircleOfLife {
                     moveSW(a, p2);
                     
                     if (hasOverlap(a, lastArea)) {
-                        moveSW(a, lastPosition);
+                        y = lastPosition.getY() + gap;
+                        x = ox + Math.sqrt(radiusSquare - Math.pow(Math.abs(oy-y), 2));
+                        p2 = new Point2D.Double(x, y);
+                        
+                        moveSW(a, p2);
                         break;
                     }
                     
@@ -397,7 +405,7 @@ public class CircleOfLife {
         ||_|
         v
     */
-    private static void layoutQ2(Area a, Point2D origin, int radius, Area lastArea) {
+    private static void layoutQ2(Area a, Point2D origin, int radius, Area lastArea, int gap) {
         if (lastArea == null) {
             Point2D p = new Point2D.Double(origin.getX() + radius, origin.getY());
             moveNW(a, p);
@@ -410,12 +418,12 @@ public class CircleOfLife {
             double radiusSquare = Math.pow(radius, 2);
             
             // Option A: put area UNDER the previous area
-            double y = lastAreaBound.getMaxY();
+            double y = lastAreaBound.getMaxY() + gap;
             double x = ox + Math.sqrt(radiusSquare - Math.pow(Math.abs(y-oy), 2));
             Point2D p1 = new Point2D.Double(x, y);
             
             // Option B: put area NEXT to the previous area
-            x = lastAreaBound.x - thisAreaBound.width;
+            x = lastAreaBound.x - thisAreaBound.width - gap;
             y = oy + Math.sqrt(radiusSquare - Math.pow(Math.abs(x-oy), 2));
             Point2D p2 = new Point2D.Double(x, y);
             
@@ -425,7 +433,7 @@ public class CircleOfLife {
                 
                 // inch back towards last area
                 Point2D lastPosition = p1;
-                y = lastAreaBound.getMaxY();
+                y = lastAreaBound.getMaxY() + gap;
                 while (true) {
                     --y;
                     x = ox + Math.sqrt(radiusSquare - Math.pow(Math.abs(y-oy), 2));
@@ -433,7 +441,11 @@ public class CircleOfLife {
                     moveNW(a, p1);
                     
                     if (hasOverlap(a, lastArea)) {
-                        moveNW(a, lastPosition);
+                        y = lastPosition.getY() + gap;
+                        x = ox + Math.sqrt(radiusSquare - Math.pow(Math.abs(y-oy), 2));
+                        p1 = new Point2D.Double(x, y);
+                        
+                        moveNW(a, p1);
                         break;
                     }
                     
@@ -445,7 +457,7 @@ public class CircleOfLife {
                 
                 // inch back towards last area
                 Point2D lastPosition = p2;
-                x = lastAreaBound.x - thisAreaBound.width;
+                x = lastAreaBound.x - thisAreaBound.width - gap;
                 while (true) {
                     ++x;
                     y = oy + Math.sqrt(radiusSquare - Math.pow(Math.abs(x-oy), 2));
@@ -453,7 +465,11 @@ public class CircleOfLife {
                     moveNW(a, p2);
                     
                     if (hasOverlap(a, lastArea)) {
-                        moveNW(a, lastPosition);
+                        x = lastPosition.getX() - gap;
+                        y = oy + Math.sqrt(radiusSquare - Math.pow(Math.abs(x-oy), 2));
+                        p2 = new Point2D.Double(x, y);
+                        
+                        moveNW(a, p2);
                         break;
                     }
                     
@@ -471,7 +487,7 @@ public class CircleOfLife {
            |_||
               v
     */
-    private static void layoutQ3(Area a, Point2D origin, int radius, Area lastArea){
+    private static void layoutQ3(Area a, Point2D origin, int radius, Area lastArea, int gap){
         if (lastArea == null) {
             Point2D p = new Point2D.Double(origin.getX(), origin.getY() + radius);
             moveNE(a, p);
@@ -485,12 +501,12 @@ public class CircleOfLife {
             
             // Option A: put area NEXT to the previous area
             
-            double x = lastAreaBound.x;
+            double x = lastAreaBound.x - gap;
             double y = oy + Math.sqrt(radiusSquare - Math.pow(Math.abs(ox-x), 2));
             Point2D p1 = new Point2D.Double(x, y);
             
             // Option B: put area ABOVE the previous area
-            y = lastAreaBound.y - thisAreaBound.height;
+            y = lastAreaBound.y - thisAreaBound.height - gap;
             x = ox - Math.sqrt(radiusSquare - Math.pow(Math.abs(y-oy), 2));
             Point2D p2 = new Point2D.Double(x, y);
             
@@ -500,7 +516,7 @@ public class CircleOfLife {
                 
                 // inch back towards last area
                 Point2D lastPosition = p1;
-                x = lastAreaBound.x;
+                x = lastAreaBound.x - gap;
                 while (true) {
                     ++x;
                     y = oy + Math.sqrt(radiusSquare - Math.pow(Math.abs(ox-x), 2));
@@ -508,7 +524,11 @@ public class CircleOfLife {
                     moveNE(a, p1);
                     
                     if (hasOverlap(a, lastArea)) {
-                        moveNE(a, lastPosition);
+                        x = lastPosition.getX() - gap;
+                        y = oy + Math.sqrt(radiusSquare - Math.pow(Math.abs(ox-x), 2));
+                        p1 = new Point2D.Double(x, y);
+                        
+                        moveNE(a, p1);
                         break;
                     }
                     
@@ -520,7 +540,7 @@ public class CircleOfLife {
                 
                 // inch back towards last area
                 Point2D lastPosition = p2;
-                y = lastAreaBound.y - thisAreaBound.height;
+                y = lastAreaBound.y - thisAreaBound.height - gap;
                 while (true) {
                     ++y;
                     x = ox - Math.sqrt(radiusSquare - Math.pow(Math.abs(y-oy), 2));
@@ -528,7 +548,11 @@ public class CircleOfLife {
                     moveNE(a, p2);
                     
                     if (hasOverlap(a, lastArea)) {
-                        moveNE(a, lastPosition);
+                        y = lastPosition.getY() - gap;
+                        x = ox - Math.sqrt(radiusSquare - Math.pow(Math.abs(y-oy), 2));
+                        p2 = new Point2D.Double(x, y);
+                        
+                        moveNE(a, p2);
                         break;
                     }
                     
@@ -546,7 +570,7 @@ public class CircleOfLife {
              \|
          <----o
     */
-    private static void layoutQ4(Area a, Point2D origin, int radius, Area lastArea){
+    private static void layoutQ4(Area a, Point2D origin, int radius, Area lastArea, int gap){
         if (lastArea == null) {
             Point2D p = new Point2D.Double(origin.getX()-radius, origin.getY());
             moveSE(a, p);
@@ -559,12 +583,12 @@ public class CircleOfLife {
             double radiusSquare = Math.pow(radius, 2);
             
             // Option A: put area ABOVE the previous area
-            double y = lastAreaBound.y;
+            double y = lastAreaBound.y - gap;
             double x = origin.getX() - Math.sqrt(radiusSquare - Math.pow(Math.abs(oy-y), 2));
             Point2D p1 = new Point2D.Double(x, y);
             
             // Option B: put area NEXT to the previous area
-            x = lastAreaBound.getMaxX() + thisAreaBound.width;
+            x = lastAreaBound.getMaxX() + thisAreaBound.width + gap;
             y = origin.getY() - Math.sqrt(radiusSquare - Math.pow(Math.abs(ox-x), 2));
             Point2D p2 = new Point2D.Double(x, y);
             
@@ -574,7 +598,7 @@ public class CircleOfLife {
                 
                 // inch back towards last area
                 Point2D lastPosition = p1;
-                y = lastAreaBound.y;
+                y = lastAreaBound.y - gap;
                 while (true) {
                     ++y;
                     x = origin.getX() - Math.sqrt(radiusSquare - Math.pow(Math.abs(oy-y), 2));
@@ -582,7 +606,11 @@ public class CircleOfLife {
                     moveSE(a, p1);
                     
                     if (hasOverlap(a, lastArea)) {
-                        moveSE(a, lastPosition);
+                        y = lastPosition.getY() - gap;
+                        x = origin.getX() - Math.sqrt(radiusSquare - Math.pow(Math.abs(oy-y), 2));
+                        p1 = new Point2D.Double(x, y);                        
+                        
+                        moveSE(a, p1);
                         break;
                     }
                     
@@ -594,7 +622,7 @@ public class CircleOfLife {
                 
                 // inch back towards last area
                 Point2D lastPosition = p2;
-                x = lastAreaBound.getMaxX() + thisAreaBound.width;
+                x = lastAreaBound.getMaxX() + thisAreaBound.width + gap;
                 while (true) {
                     --x;
                     y = origin.getY() - Math.sqrt(radiusSquare - Math.pow(Math.abs(ox-x), 2));
@@ -602,7 +630,11 @@ public class CircleOfLife {
                     moveSE(a, p2);
                     
                     if (hasOverlap(a, lastArea)) {
-                        moveSE(a, lastPosition);
+                        x = lastPosition.getX() + gap;
+                        y = origin.getY() - Math.sqrt(radiusSquare - Math.pow(Math.abs(ox-x), 2));
+                        p2 = new Point2D.Double(x, y);
+                        
+                        moveSE(a, p2);
                         break;
                     }
                     
@@ -686,7 +718,7 @@ public class CircleOfLife {
         return -1;
     }
         
-    public static Area[] neighbor(Area[] areas, Point2D origin, int radius) {        
+    public static Area[] neighbor(Area[] areas, Point2D origin, int radius, int gap) {        
         int num = areas.length;
         
         Area[] clone = new Area[num];
@@ -709,12 +741,12 @@ public class CircleOfLife {
             clone[b] = tmp;
         }
         
-        layout(clone, origin, radius);
+        layout(clone, origin, radius, gap);
         
         return clone;
     }
     
-    public static Area[] simulatedAnnealing(Area[] areas, Point2D origin, int radius, int steps) {
+    public static Area[] simulatedAnnealing(Area[] areas, Point2D origin, int radius, int steps, int gap) {
         /*
             Let s = s0
             For k = 0 through kmax (exclusive):
@@ -725,7 +757,7 @@ public class CircleOfLife {
             Output: the final state s
         */
         
-        layout(areas, origin, radius);
+        layout(areas, origin, radius, gap);
         Area[] bestState = areas;
         double bestEnergy = energy(bestState, origin);
         
@@ -733,7 +765,7 @@ public class CircleOfLife {
         double currentEnergy = bestEnergy;
         
         for (int i=0; i<steps; ++i) {
-            Area[] newState = neighbor(currentState, origin, radius);
+            Area[] newState = neighbor(currentState, origin, radius, gap);
             double newEnergy = energy(newState, origin);
             
             //@TODO
@@ -752,7 +784,7 @@ public class CircleOfLife {
         int maxShapeDiagonal = (int) Math.ceil(Math.sqrt(Math.pow(maxShapeWidth, 2) + Math.pow(maxShapeHeight, 2)));
         
         int reshapeIterations = 2;
-        int gap = 10;
+        int gap = 2;
         
         int layoutBaseRadius = 3000;
         int layers = 10;
@@ -774,7 +806,7 @@ public class CircleOfLife {
         
         // layout shapes in circular manner
         Point2D origin = new Point2D.Double(maxWidth/2, maxHeight/2);
-        layout(shapes, origin, layoutBaseRadius);
+        layout(shapes, origin, layoutBaseRadius, gap);
         
         // output to an image
         BufferedImage bi = new BufferedImage(maxWidth, maxHeight, BufferedImage.TYPE_INT_ARGB);
