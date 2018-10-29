@@ -361,9 +361,9 @@ public class CircleOfLife {
                     if (hasOverlap(a, lastArea)) {
                         x = lastPosition.getX() + gap;
                         y = oy - Math.sqrt(radiusSquare - Math.pow(Math.abs(x-ox), 2));
-                        p1 = new Point2D.Double(x, y);
+                        lastPosition = new Point2D.Double(x, y);
                         
-                        moveSW(a, p1);
+                        moveSW(a, lastPosition);
                         break;
                     }
                     
@@ -385,9 +385,9 @@ public class CircleOfLife {
                     if (hasOverlap(a, lastArea)) {
                         y = lastPosition.getY() + gap;
                         x = ox + Math.sqrt(radiusSquare - Math.pow(Math.abs(oy-y), 2));
-                        p2 = new Point2D.Double(x, y);
+                        lastPosition = new Point2D.Double(x, y);
                         
-                        moveSW(a, p2);
+                        moveSW(a, lastPosition);
                         break;
                     }
                     
@@ -443,9 +443,9 @@ public class CircleOfLife {
                     if (hasOverlap(a, lastArea)) {
                         y = lastPosition.getY() + gap;
                         x = ox + Math.sqrt(radiusSquare - Math.pow(Math.abs(y-oy), 2));
-                        p1 = new Point2D.Double(x, y);
+                        lastPosition = new Point2D.Double(x, y);
                         
-                        moveNW(a, p1);
+                        moveNW(a, lastPosition);
                         break;
                     }
                     
@@ -467,9 +467,9 @@ public class CircleOfLife {
                     if (hasOverlap(a, lastArea)) {
                         x = lastPosition.getX() - gap;
                         y = oy + Math.sqrt(radiusSquare - Math.pow(Math.abs(x-oy), 2));
-                        p2 = new Point2D.Double(x, y);
+                        lastPosition = new Point2D.Double(x, y);
                         
-                        moveNW(a, p2);
+                        moveNW(a, lastPosition);
                         break;
                     }
                     
@@ -526,9 +526,9 @@ public class CircleOfLife {
                     if (hasOverlap(a, lastArea)) {
                         x = lastPosition.getX() - gap;
                         y = oy + Math.sqrt(radiusSquare - Math.pow(Math.abs(ox-x), 2));
-                        p1 = new Point2D.Double(x, y);
+                        lastPosition = new Point2D.Double(x, y);
                         
-                        moveNE(a, p1);
+                        moveNE(a, lastPosition);
                         break;
                     }
                     
@@ -550,9 +550,9 @@ public class CircleOfLife {
                     if (hasOverlap(a, lastArea)) {
                         y = lastPosition.getY() - gap;
                         x = ox - Math.sqrt(radiusSquare - Math.pow(Math.abs(y-oy), 2));
-                        p2 = new Point2D.Double(x, y);
+                        lastPosition = new Point2D.Double(x, y);
                         
-                        moveNE(a, p2);
+                        moveNE(a, lastPosition);
                         break;
                     }
                     
@@ -608,9 +608,9 @@ public class CircleOfLife {
                     if (hasOverlap(a, lastArea)) {
                         y = lastPosition.getY() - gap;
                         x = origin.getX() - Math.sqrt(radiusSquare - Math.pow(Math.abs(oy-y), 2));
-                        p1 = new Point2D.Double(x, y);                        
+                        lastPosition = new Point2D.Double(x, y);                        
                         
-                        moveSE(a, p1);
+                        moveSE(a, lastPosition);
                         break;
                     }
                     
@@ -632,9 +632,9 @@ public class CircleOfLife {
                     if (hasOverlap(a, lastArea)) {
                         x = lastPosition.getX() + gap;
                         y = origin.getY() - Math.sqrt(radiusSquare - Math.pow(Math.abs(ox-x), 2));
-                        p2 = new Point2D.Double(x, y);
+                        lastPosition = new Point2D.Double(x, y);
                         
-                        moveSE(a, p2);
+                        moveSE(a, lastPosition);
                         break;
                     }
                     
@@ -761,14 +761,19 @@ public class CircleOfLife {
         Area[] bestState = areas;
         double bestEnergy = energy(bestState, origin);
         
-        Area[] currentState = bestState;
-        double currentEnergy = bestEnergy;
+//        Area[] currentState = bestState;
+//        double currentEnergy = bestEnergy;
         
         for (int i=0; i<steps; ++i) {
-            Area[] newState = neighbor(currentState, origin, radius, gap);
+            System.out.println(i);
+            
+            Area[] newState = neighbor(bestState, origin, radius, gap);
             double newEnergy = energy(newState, origin);
             
-            //@TODO
+            if (newEnergy < bestEnergy) {
+                bestEnergy = newEnergy;
+                bestState = newState;
+            }
         }
         
         return bestState;
@@ -807,6 +812,7 @@ public class CircleOfLife {
         // layout shapes in circular manner
         Point2D origin = new Point2D.Double(maxWidth/2, maxHeight/2);
         layout(shapes, origin, layoutBaseRadius, gap);
+        //shapes = simulatedAnnealing(shapes, origin, layoutBaseRadius, numShapes * 10, gap);
         
         // output to an image
         BufferedImage bi = new BufferedImage(maxWidth, maxHeight, BufferedImage.TYPE_INT_ARGB);
