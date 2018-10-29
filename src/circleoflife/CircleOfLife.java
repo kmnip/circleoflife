@@ -7,6 +7,7 @@ package circleoflife;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
@@ -28,9 +29,47 @@ import javax.imageio.ImageIO;
  *
  * @author kmnip
  */
-public class CircleOfLife {
+public class CircleOfLife {    
     public static Random randNumGen = new Random();
 
+    public class MyShape {
+        Area area;
+        int id;
+        int numRotations;
+        
+        public MyShape(Area area, int id) {
+            this.id = id;
+            this.area = area;
+            this.numRotations = 0;
+        }
+        
+        public MyShape(Area area, int id, int numRotations) {
+            this.id = id;
+            this.area = area;
+            this.numRotations = numRotations;
+        }
+        
+        public void rotate() {
+            if (numRotations >= 3) {
+                numRotations = 0;
+            }
+            else {
+                ++numRotations;
+            }
+            
+            rotateForward(area);
+        }
+        
+        public Point getPosition() {
+            return this.area.getBounds().getLocation();
+        }
+        
+        @Override
+        public MyShape clone() {
+            return new MyShape((Area) area.clone(), this.id, this.numRotations);
+        }
+    }
+    
     public static Area getRandomShape(int maxWidth, int maxHeight, int reshapeIterations) {
         // initial area is a rectangle
         Area s = new Area(new Rectangle(0, 0, maxWidth, maxHeight));
@@ -128,14 +167,19 @@ public class CircleOfLife {
     
     public static boolean hasOverlap(Area a1, Area a2) {
         if (a1.intersects(a2.getBounds2D())) {
-            // Note that rectangular bounds are an overestimate!
-            
             PathIterator p = a2.getPathIterator(null);
             float[] point = new float[2];
             for (; !p.isDone(); p.next()) {
                 p.currentSegment(point);
-
                 if (a1.contains(point[0], point[1])) {
+                    return true;
+                }
+            }
+            
+            p = a1.getPathIterator(null);
+            for (; !p.isDone(); p.next()) {
+                p.currentSegment(point);
+                if (a2.contains(point[0], point[1])) {
                     return true;
                 }
             }
@@ -304,9 +348,43 @@ public class CircleOfLife {
             // move to the closest option
             if (distance(lastArea, p1) <= distance(lastArea, p2)) {
                 moveSW(a, p1);
+
+                // inch back towards last area
+                Point2D lastPosition = p1;
+                x = lastAreaBound.getMaxX();
+                while (true) {
+                    --x;
+                    y = oy - Math.sqrt(radiusSquare - Math.pow(Math.abs(x-ox), 2));
+                    p1 = new Point2D.Double(x, y);
+                    moveSW(a, p1);
+                    
+                    if (hasOverlap(a, lastArea)) {
+                        moveSW(a, lastPosition);
+                        break;
+                    }
+                    
+                    lastPosition = p1;
+                }
             }
             else {
                 moveSW(a, p2);
+                
+                // inch back towards last area
+                Point2D lastPosition = p2;
+                y = lastAreaBound.getMaxY() + thisAreaBound.height;
+                while (true) {
+                    --y;
+                    x = ox + Math.sqrt(radiusSquare - Math.pow(Math.abs(oy-y), 2));
+                    p2 = new Point2D.Double(x, y);
+                    moveSW(a, p2);
+                    
+                    if (hasOverlap(a, lastArea)) {
+                        moveSW(a, lastPosition);
+                        break;
+                    }
+                    
+                    lastPosition = p2;
+                }
             }
         }
     }
@@ -344,9 +422,43 @@ public class CircleOfLife {
             // move to the closest option
             if (distance(lastArea, p1) <= distance(lastArea, p2)) {
                 moveNW(a, p1);
+                
+                // inch back towards last area
+                Point2D lastPosition = p1;
+                y = lastAreaBound.getMaxY();
+                while (true) {
+                    --y;
+                    x = ox + Math.sqrt(radiusSquare - Math.pow(Math.abs(y-oy), 2));
+                    p1 = new Point2D.Double(x, y);
+                    moveNW(a, p1);
+                    
+                    if (hasOverlap(a, lastArea)) {
+                        moveNW(a, lastPosition);
+                        break;
+                    }
+                    
+                    lastPosition = p1;
+                }
             }
             else {
                 moveNW(a, p2);
+                
+                // inch back towards last area
+                Point2D lastPosition = p2;
+                x = lastAreaBound.x - thisAreaBound.width;
+                while (true) {
+                    ++x;
+                    y = oy + Math.sqrt(radiusSquare - Math.pow(Math.abs(x-oy), 2));
+                    p2 = new Point2D.Double(x, y);
+                    moveNW(a, p2);
+                    
+                    if (hasOverlap(a, lastArea)) {
+                        moveNW(a, lastPosition);
+                        break;
+                    }
+                    
+                    lastPosition = p2;
+                }
             }
         }
     }
@@ -385,9 +497,43 @@ public class CircleOfLife {
             // move to the closest option
             if (distance(lastArea, p1) <= distance(lastArea, p2)) {
                 moveNE(a, p1);
+                
+                // inch back towards last area
+                Point2D lastPosition = p1;
+                x = lastAreaBound.x;
+                while (true) {
+                    ++x;
+                    y = oy + Math.sqrt(radiusSquare - Math.pow(Math.abs(ox-x), 2));
+                    p1 = new Point2D.Double(x, y);
+                    moveNE(a, p1);
+                    
+                    if (hasOverlap(a, lastArea)) {
+                        moveNE(a, lastPosition);
+                        break;
+                    }
+                    
+                    lastPosition = p1;
+                }
             }
             else {
                 moveNE(a, p2);
+                
+                // inch back towards last area
+                Point2D lastPosition = p2;
+                y = lastAreaBound.y - thisAreaBound.height;
+                while (true) {
+                    ++y;
+                    x = ox - Math.sqrt(radiusSquare - Math.pow(Math.abs(y-oy), 2));
+                    p2 = new Point2D.Double(x, y);
+                    moveNE(a, p2);
+                    
+                    if (hasOverlap(a, lastArea)) {
+                        moveNE(a, lastPosition);
+                        break;
+                    }
+                    
+                    lastPosition = p2;
+                }
             }
         }
     }
@@ -425,9 +571,43 @@ public class CircleOfLife {
             // move to the closest option
             if (distance(lastArea, p1) <= distance(lastArea, p2)) {
                 moveSE(a, p1);
+                
+                // inch back towards last area
+                Point2D lastPosition = p1;
+                y = lastAreaBound.y;
+                while (true) {
+                    ++y;
+                    x = origin.getX() - Math.sqrt(radiusSquare - Math.pow(Math.abs(oy-y), 2));
+                    p1 = new Point2D.Double(x, y);
+                    moveSE(a, p1);
+                    
+                    if (hasOverlap(a, lastArea)) {
+                        moveSE(a, lastPosition);
+                        break;
+                    }
+                    
+                    lastPosition = p1;
+                }
             }
             else {
                 moveSE(a, p2);
+                
+                // inch back towards last area
+                Point2D lastPosition = p2;
+                x = lastAreaBound.getMaxX() + thisAreaBound.width;
+                while (true) {
+                    --x;
+                    y = origin.getY() - Math.sqrt(radiusSquare - Math.pow(Math.abs(ox-x), 2));
+                    p2 = new Point2D.Double(x, y);
+                    moveSE(a, p2);
+                    
+                    if (hasOverlap(a, lastArea)) {
+                        moveSE(a, lastPosition);
+                        break;
+                    }
+                    
+                    lastPosition = p2;
+                }
             }
         }
     }
@@ -605,14 +785,20 @@ public class CircleOfLife {
         Shape circle = new Ellipse2D.Double(origin.getX()-layoutBaseRadius, origin.getY()-layoutBaseRadius, 2*layoutBaseRadius, 2*layoutBaseRadius);
         ig2.draw(circle);
         
-        // fill all area
+        // fill all areas
         for (Area s : shapes) {
             ig2.fill(s);
         }
         
+        // draw outlines for all areas
+        ig2.setPaint(Color.MAGENTA);
+        for (Area s : shapes) {
+            ig2.draw(s);
+        }
+        
         // write image
         try {
-            ImageIO.write(bi, "PNG", new File("/home/kmnip/sandbox/circleOfLife.png"));
+            ImageIO.write(bi, "PNG", new File(System.getProperty("user.home") + "/sandbox/circleOfLife.png"));
         } catch (IOException ex) {
             Logger.getLogger(CircleOfLife.class.getName()).log(Level.SEVERE, null, ex);
         }
