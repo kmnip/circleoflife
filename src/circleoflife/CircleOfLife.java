@@ -211,6 +211,19 @@ public class CircleOfLife {
         return c.distance(p);
     }
     
+    public static double maxDistance(Area a, Point2D p) {
+        double maxDistance = 0;
+        
+        PathIterator itr = a.getPathIterator(null);
+        double[] point = new double[2];
+        for (; !itr.isDone(); itr.next()) {
+            itr.currentSegment(point);
+            maxDistance = Math.max(maxDistance, p.distance(point[0], point[1]));
+        }
+            
+        return maxDistance;
+    }
+    
     public static int numOverlaps(Area a, Area[] areas) {
         int numOverlaps = 0;
         
@@ -271,7 +284,7 @@ public class CircleOfLife {
         }  
         layoutQ1(lastArea, origin, currentRadius, null, gap);
         ringMembers.add(lastArea);
-        double maxAreaDiagonal = diagonal(lastArea);
+        double maxAreaDistance = maxDistance(lastArea, origin);
         
         Area a;
         int numAreas = areas.length;
@@ -342,19 +355,19 @@ public class CircleOfLife {
                     layoutQ4(a, origin, currentRadius, lastArea, gap);
                     if (inQuadrant1(a, origin)) {
                         lastQuadrant = 1;
-                        currentRadius += maxAreaDiagonal;
+                        currentRadius = (int) maxAreaDistance + gap;
                         layoutQ1(a, origin, currentRadius, null, gap);
 
                         ringMembers = new ArrayDeque<>();
                         layers.add(ringMembers);
-                        maxAreaDiagonal = 0;
+                        maxAreaDistance = 0;
                     }
                     break;
             }
 
             lastArea = a;
             ringMembers.add(a);
-            maxAreaDiagonal = Math.max(maxAreaDiagonal, diagonal(a));
+            maxAreaDistance = Math.max(maxAreaDistance, maxDistance(a, origin));
         }
     }
     
