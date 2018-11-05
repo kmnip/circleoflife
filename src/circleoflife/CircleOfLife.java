@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
@@ -71,12 +72,18 @@ public class CircleOfLife {
     }
     
     public static Area getRandomShape(int maxWidth, int maxHeight, int reshapeIterations) {
+        // randomize width and height
+        int width = ThreadLocalRandom.current().nextInt(maxWidth/2, maxWidth + 1);
+        int height = ThreadLocalRandom.current().nextInt(maxHeight/2, maxHeight + 1);
+//        int width = maxWidth;
+//        int height = maxHeight;
+
         // initial area is a rectangle
-        Area s = new Area(new Rectangle(0, 0, maxWidth, maxHeight));
+        Area s = new Area(new Rectangle(0, 0, width, height));
         
         // create random rectangular slices from corners
-        int maxSliceWidth = maxWidth/2;
-        int maxSliceHeight = maxHeight/2;
+        int maxSliceWidth = width/2;
+        int maxSliceHeight = height/2;
         int w,h;
         
         for (int i=0; i<reshapeIterations; ++i) {
@@ -88,17 +95,17 @@ public class CircleOfLife {
             // top right corner
             w = randNumGen.nextInt(maxSliceWidth);
             h = randNumGen.nextInt(maxSliceHeight);
-            s.subtract(new Area(new Rectangle(maxWidth-w, 0, w, h)));
+            s.subtract(new Area(new Rectangle(width-w, 0, w, h)));
 
             // bottom right corner
             w = randNumGen.nextInt(maxSliceWidth);
             h = randNumGen.nextInt(maxSliceHeight);
-            s.subtract(new Area(new Rectangle(maxWidth-w, maxHeight-h, w, h)));
+            s.subtract(new Area(new Rectangle(width-w, height-h, w, h)));
 
             // bottom left corner
             w = randNumGen.nextInt(maxSliceWidth);
             h = randNumGen.nextInt(maxSliceHeight);
-            s.subtract(new Area(new Rectangle(0, maxHeight-h, w, h)));
+            s.subtract(new Area(new Rectangle(0, height-h, w, h)));
         }
         
         return s;
@@ -891,7 +898,7 @@ public class CircleOfLife {
     public static void main(String[] args) {
         // max dimensions of each shape
         int maxShapeWidth = 200;
-        int maxShapeHeight = 100;
+        int maxShapeHeight = 200;
         int maxShapeDiagonal = (int) Math.ceil(Math.sqrt(Math.pow(maxShapeWidth, 2) + Math.pow(maxShapeHeight, 2)));
         
         int reshapeIterations = 2;
