@@ -32,7 +32,19 @@ import javax.imageio.ImageIO;
  */
 public class CircleOfLife {    
     public static Random randNumGen = new Random();
-
+    
+    private final Area[] shapes;
+    private final Point2D origin;
+    private final int layoutBaseRadius;
+    private final int gap;
+    
+    public CircleOfLife(Area[] shapes, Point2D origin, int layoutBaseRadius, int gap) {
+        this.shapes = shapes;
+        this.origin = origin;
+        this.layoutBaseRadius = layoutBaseRadius;
+        this.gap = gap;
+    }
+    
     public class MyShape {
         Area area;
         int id;
@@ -276,16 +288,16 @@ public class CircleOfLife {
          |/        ||_|        |_||        \|
          o---->    v              v    <----o
     */
-    public static void layout(Area[] areas, Point2D origin, int radius, int gap) {
+    public void layout() {
         // layout areas around the circle
 
         ArrayList<ArrayDeque<Area>> layers = new ArrayList<>();
         ArrayDeque<Area> ringMembers = new ArrayDeque<>();
         layers.add(ringMembers);
         
-        int currentRadius = radius;
+        int currentRadius = this.layoutBaseRadius;
         int lastQuadrant = 1;
-        Area lastArea = areas[0];
+        Area lastArea = shapes[0];
         if (isHorizontal(lastArea)) {
             rotateForward(lastArea);
         }  
@@ -294,9 +306,9 @@ public class CircleOfLife {
         double maxAreaDistance = maxDistance(lastArea, origin);
         
         Area a;
-        int numAreas = areas.length;
+        int numAreas = shapes.length;
         for (int i=1; i<numAreas; ++i) {
-            a = areas[i];
+            a = shapes[i];
             
             // check quadrant
             switch (lastQuadrant) {
@@ -360,7 +372,7 @@ public class CircleOfLife {
                         }                        
                     }
                     layoutQ4(a, origin, currentRadius, lastArea, gap);
-                    if (inQuadrant1(a, origin)) {
+                    if (inQuadrant1(a, origin) && hasOverlap(a, ringMembers.getFirst())) {
                         lastQuadrant = 1;
                         currentRadius = (int) maxAreaDistance + gap;
                         layoutQ1(a, origin, currentRadius, null, gap);
@@ -854,7 +866,7 @@ public class CircleOfLife {
             clone[b] = tmp;
         }
         
-        layout(clone, origin, radius, gap);
+        //layout(clone, origin, radius, gap);
         
         return clone;
     }
@@ -870,7 +882,7 @@ public class CircleOfLife {
             Output: the final state s
         */
         
-        layout(areas, origin, radius, gap);
+        //layout(areas, origin, radius, gap);
         Area[] bestState = areas;
         double bestEnergy = energy(bestState, origin);
         
@@ -924,7 +936,8 @@ public class CircleOfLife {
         
         // layout shapes in circular manner
         Point2D origin = new Point2D.Double(maxWidth/2, maxHeight/2);
-        layout(shapes, origin, layoutBaseRadius, gap);
+        CircleOfLife life = new CircleOfLife(shapes, origin, layoutBaseRadius, gap);
+        life.layout();
         //shapes = simulatedAnnealing(shapes, origin, layoutBaseRadius, numShapes * 10, gap);
         
         // output to an image
