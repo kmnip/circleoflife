@@ -336,7 +336,7 @@ public class CircleOfLife {
             // check quadrant
             switch (lastQuadrant) {
                 case 1:
-                    if (isMoreThanHalfQ1(lastArea, origin)) {
+                    if (isMoreThanHalfQ1(lastArea)) {
                         if (isVertical(a)) {
                             rotateForward(a);
                         }
@@ -347,12 +347,12 @@ public class CircleOfLife {
                         }                        
                     }
                     layoutQ1(a, currentRadius, lastArea, layers);
-                    if (inQuadrant2(a, origin)) {
+                    if (inQuadrant2(a)) {
                         lastQuadrant = 2;
                     }
                     break;
                 case 2:
-                    if (isMoreThanHalfQ2(lastArea, origin)) {
+                    if (isMoreThanHalfQ2(lastArea)) {
                         if (isHorizontal(a)) {
                             rotateForward(a);
                         }
@@ -363,12 +363,12 @@ public class CircleOfLife {
                         }                        
                     }
                     layoutQ2(a, currentRadius, lastArea);
-                    if (inQuadrant3(a, origin)) {
+                    if (inQuadrant3(a)) {
                         lastQuadrant = 3;
                     }                        
                     break;
                 case 3:
-                    if (isMoreThanHalfQ3(lastArea, origin)) {
+                    if (isMoreThanHalfQ3(lastArea)) {
                         if (isVertical(a)) {
                             rotateForward(a);
                         }
@@ -379,12 +379,12 @@ public class CircleOfLife {
                         }                        
                     }
                     layoutQ3(a, currentRadius, lastArea);
-                    if (inQuadrant4(a, origin)) {
+                    if (inQuadrant4(a)) {
                         lastQuadrant = 4;
                     }
                     break;
                 case 4:
-                    if (isMoreThanHalfQ4(lastArea, origin)) {
+                    if (isMoreThanHalfQ4(lastArea)) {
                         if (isHorizontal(a)) {
                             rotateForward(a);
                         }
@@ -395,7 +395,7 @@ public class CircleOfLife {
                         }                        
                     }
                     layoutQ4(a, currentRadius, lastArea);
-                    if (inQuadrant1(a, origin) && hasOverlap(a, ringMembers.getFirst())) {
+                    if (inQuadrant1(a) && hasOverlap(a, ringMembers.getFirst())) {
                         lastQuadrant = 1;
                         currentRadius = (int) maxAreaDistance + gap;
                         
@@ -815,7 +815,7 @@ public class CircleOfLife {
         return b.width > b.height;
     }
     
-    private static boolean inQuadrant1(Area a, Point2D origin) {
+    private boolean inQuadrant1(Area a) {
         double ox = origin.getX();
         double oy = origin.getY();
         Rectangle b = a.getBounds();
@@ -828,7 +828,7 @@ public class CircleOfLife {
         return (y <= oy && x >= ox) || (y <= oy && maxX >= ox) || (maxY <= oy && maxX >= ox) || (maxY <= oy && x >= ox); 
     }
     
-    private static boolean isMoreThanHalfQ1(Area a, Point2D origin) {
+    private boolean isMoreThanHalfQ1(Area a) {
         double ox = origin.getX();
         double oy = origin.getY();
         Rectangle b = a.getBounds();
@@ -838,7 +838,7 @@ public class CircleOfLife {
         return (oy - maxY) < (x - ox);
     }
     
-    private static boolean inQuadrant2(Area a, Point2D origin) {
+    private boolean inQuadrant2(Area a) {
         double ox = origin.getX();
         double oy = origin.getY();
         Rectangle b = a.getBounds();
@@ -851,7 +851,7 @@ public class CircleOfLife {
         return (y >= oy && x >= ox) || (y >= oy && maxX >= ox) || (maxY >= oy && maxX >= ox) || (maxY >= oy && x >= ox);
     }
     
-    private static boolean isMoreThanHalfQ2(Area a, Point2D origin) {
+    private boolean isMoreThanHalfQ2(Area a) {
         double ox = origin.getX();
         double oy = origin.getY();
         Rectangle b = a.getBounds();
@@ -861,7 +861,7 @@ public class CircleOfLife {
         return (x - ox) < (y - oy);
     }
     
-    private static boolean inQuadrant3(Area a, Point2D origin) {
+    private boolean inQuadrant3(Area a) {
         double ox = origin.getX();
         double oy = origin.getY();
         Rectangle b = a.getBounds();
@@ -874,7 +874,7 @@ public class CircleOfLife {
         return (y >= oy && x <= ox) || (y >= oy && maxX <= ox) || (maxY >= oy && maxX <= ox) || (maxY >= oy && x <= ox);
     }
 
-    private static boolean isMoreThanHalfQ3(Area a, Point2D origin) {
+    private boolean isMoreThanHalfQ3(Area a) {
         double ox = origin.getX();
         double oy = origin.getY();
         Rectangle b = a.getBounds();
@@ -884,7 +884,7 @@ public class CircleOfLife {
         return (y - oy) < (ox - maxX);
     }
     
-    private static boolean inQuadrant4(Area a, Point2D origin) {
+    private boolean inQuadrant4(Area a) {
         double ox = origin.getX();
         double oy = origin.getY();
         Rectangle b = a.getBounds();
@@ -897,7 +897,7 @@ public class CircleOfLife {
         return (y <= oy && x <= ox) || (y <= oy && maxX <= ox) || (maxY <= oy && maxX <= ox) || (maxY <= oy && x <= ox);
     }
     
-    private static boolean isMoreThanHalfQ4(Area a, Point2D origin) {
+    private boolean isMoreThanHalfQ4(Area a) {
         double ox = origin.getX();
         double oy = origin.getY();
         Rectangle b = a.getBounds();
@@ -907,7 +907,7 @@ public class CircleOfLife {
         return (ox - maxX) < (oy - maxY);
     }
     
-    public static int checkQuadrant(Point2D origin, Point2D p) {
+    public int checkQuadrant(Point2D p) {
         double ox = origin.getX();
         double oy = origin.getY();
         double px = p.getX();
