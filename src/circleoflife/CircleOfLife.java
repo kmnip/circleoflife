@@ -318,7 +318,7 @@ public class CircleOfLife {
         if (isHorizontal(lastArea)) {
             rotateForward(lastArea);
         }  
-        layoutQ1(lastArea, origin, currentRadius, null, gap, layers);
+        layoutQ1(lastArea, currentRadius, null, layers);
         
         ArrayDeque<Area> lastRingMembers = null;
         ArrayDeque<Area> ringMembers = new ArrayDeque<>();
@@ -346,7 +346,7 @@ public class CircleOfLife {
                             rotateForward(a);
                         }                        
                     }
-                    layoutQ1(a, origin, currentRadius, lastArea, gap, layers);
+                    layoutQ1(a, currentRadius, lastArea, layers);
                     if (inQuadrant2(a, origin)) {
                         lastQuadrant = 2;
                     }
@@ -362,7 +362,7 @@ public class CircleOfLife {
                             rotateForward(a);
                         }                        
                     }
-                    layoutQ2(a, origin, currentRadius, lastArea, gap);
+                    layoutQ2(a, currentRadius, lastArea);
                     if (inQuadrant3(a, origin)) {
                         lastQuadrant = 3;
                     }                        
@@ -378,7 +378,7 @@ public class CircleOfLife {
                             rotateForward(a);
                         }                        
                     }
-                    layoutQ3(a, origin, currentRadius, lastArea, gap);
+                    layoutQ3(a, currentRadius, lastArea);
                     if (inQuadrant4(a, origin)) {
                         lastQuadrant = 4;
                     }
@@ -394,7 +394,7 @@ public class CircleOfLife {
                             rotateForward(a);
                         }                        
                     }
-                    layoutQ4(a, origin, currentRadius, lastArea, gap);
+                    layoutQ4(a, currentRadius, lastArea);
                     if (inQuadrant1(a, origin) && hasOverlap(a, ringMembers.getFirst())) {
                         lastQuadrant = 1;
                         currentRadius = (int) maxAreaDistance + gap;
@@ -403,7 +403,7 @@ public class CircleOfLife {
                         ringMembers = new ArrayDeque<>();
                         layers.add(ringMembers);
                         
-                        layoutQ1(a, origin, currentRadius, null, gap, layers);
+                        layoutQ1(a, currentRadius, null, layers);
                         
                         maxAreaDistance = 0;
                     }
@@ -424,7 +424,7 @@ public class CircleOfLife {
          |/
          o---->
     */
-    private static void layoutQ1(Area a, Point2D origin, int radius, Area lastArea, int gap, ArrayList<ArrayDeque<Area>> layers) {
+    private void layoutQ1(Area a, int radius, Area lastArea, ArrayList<ArrayDeque<Area>> layers) {
         if (lastArea == null) {
             Point2D p = new Point2D.Double(origin.getX(), origin.getY() - radius);
             moveSW(a, p);
@@ -521,7 +521,7 @@ public class CircleOfLife {
         ||_|
         v
     */
-    private static void layoutQ2(Area a, Point2D origin, int radius, Area lastArea, int gap) {
+    private void layoutQ2(Area a, int radius, Area lastArea) {
         if (lastArea == null) {
             Point2D p = new Point2D.Double(origin.getX() + radius, origin.getY());
             moveNW(a, p);
@@ -618,7 +618,7 @@ public class CircleOfLife {
            |_||
               v
     */
-    private static void layoutQ3(Area a, Point2D origin, int radius, Area lastArea, int gap){
+    private void layoutQ3(Area a, int radius, Area lastArea){
         if (lastArea == null) {
             Point2D p = new Point2D.Double(origin.getX(), origin.getY() + radius);
             moveNE(a, p);
@@ -716,7 +716,7 @@ public class CircleOfLife {
              \|
          <----o
     */
-    private static void layoutQ4(Area a, Point2D origin, int radius, Area lastArea, int gap){
+    private void layoutQ4(Area a, int radius, Area lastArea){
         if (lastArea == null) {
             Point2D p = new Point2D.Double(origin.getX()-radius, origin.getY());
             moveSE(a, p);
