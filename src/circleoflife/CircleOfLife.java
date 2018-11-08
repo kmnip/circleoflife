@@ -390,16 +390,15 @@ public class CircleOfLife {
         
         int currentRadius = this.layoutBaseRadius;
         int lastQuadrant = 1;
-        Area lastArea = shapes[0];
-        if (isHorizontal(lastArea)) {
-            rotateForward(lastArea);
+        Area a = shapes[0];
+        if (isHorizontal(a)) {
+            rotateForward(a);
         }  
-        layoutQ1(lastArea, currentRadius, ringMembers, false);
+        layoutQ1(a, currentRadius, ringMembers, false);
         
-        ringMembers.add(lastArea);
-        double maxAreaDistance = maxDistance(lastArea, origin);
+        ringMembers.add(a);
+        double maxAreaDistance = maxDistance(a, origin);
         
-        Area a;
         int numAreas = shapes.length;
         for (int i=1; i<numAreas; ++i) {
             System.out.println(i);
@@ -417,7 +416,6 @@ public class CircleOfLife {
             }
 
             lastQuadrant = q;
-            lastArea = a;
             ringMembers.add(a);
             maxAreaDistance = Math.max(maxAreaDistance, maxDistance(a, origin));
         }
@@ -817,6 +815,46 @@ public class CircleOfLife {
         }
     }
     
+    private void moveDown(Area a, ArrayDeque<Area> ringMembers) {        
+        Rectangle bounds = a.getBounds();
+        
+        int x = bounds.x;
+        int y = bounds.y;
+        
+        double yMax = origin.getY() - Math.sqrt(layoutBaseRadius*layoutBaseRadius-Math.pow(Math.abs(x-origin.getX()),2)) - bounds.height;
+        
+        while (y < yMax) {
+            ++y;
+            Point2D p = new Point2D.Double(x, y);
+            move(a, p);
+            
+            if (hasOverlap(a, ringMembers)) {
+                move(a, new Point2D.Double(x, y-1-gap));
+                break;
+            }
+        }
+    }
+    
+    private void moveUp(Area a, ArrayDeque<Area> ringMembers) {        
+        Rectangle bounds = a.getBounds();
+        
+        int x = bounds.x;
+        int y = bounds.y;
+        
+        double yMin = origin.getY();
+        
+        while (y <= yMin) {
+            --y;
+            Point2D p = new Point2D.Double(x, y);
+            move(a, p);
+            
+            if (hasOverlap(a, ringMembers)) {
+                move(a, new Point2D.Double(x, y+1+gap));
+                break;
+            }
+        }
+    }
+    
     private static boolean isVertical(Area a) {
         Rectangle b = a.getBounds();
         return b.height > b.width;
@@ -1042,7 +1080,7 @@ public class CircleOfLife {
             //shapes[i] = new Area(new Rectangle(0, 0, maxShapeWidth, maxShapeHeight));
         }
         
-        //Arrays.sort(shapes, new AreaComparator());
+        Arrays.sort(shapes, new AreaComparator());
         
         // layout shapes in circular manner
         Point2D origin = new Point2D.Double(maxWidth/2, maxHeight/2);
