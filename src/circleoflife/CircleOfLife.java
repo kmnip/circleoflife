@@ -187,7 +187,7 @@ public class CircleOfLife {
     }
     
     public static boolean hasOverlap(Area a1, Area a2) {
-//        if (a1.intersects(a2.getBounds2D())) {
+        if (a1.intersects(a2.getBounds2D())) {
             float[] point = new float[2];
             
             PathIterator p = a2.getPathIterator(null);
@@ -205,7 +205,7 @@ public class CircleOfLife {
                     return true;
                 }
             }
-//        }
+        }
         
         return false;
     }
@@ -302,6 +302,79 @@ public class CircleOfLife {
         return e;
     }
     
+    private int layoutHelper(int lastQuadrant, Area a, int currentRadius, ArrayDeque<Area> ringMembers, boolean inchBack) {
+        Area lastArea = ringMembers.getLast();
+        
+        switch (lastQuadrant) {
+            case 1:
+                if (isMoreThanHalfQ1(lastArea)) {
+                    if (isVertical(a)) {
+                        rotateForward(a);
+                    }
+                }
+                else {
+                    if (isHorizontal(a)) {
+                        rotateForward(a);
+                    }                        
+                }
+                layoutQ1(a, currentRadius, ringMembers, inchBack);
+                if (inQuadrant2(a)) {
+                    lastQuadrant = 2;
+                }
+                break;
+            case 2:
+                if (isMoreThanHalfQ2(lastArea)) {
+                    if (isHorizontal(a)) {
+                        rotateForward(a);
+                    }
+                }
+                else {
+                    if (isVertical(a)) {
+                        rotateForward(a);
+                    }                        
+                }
+                layoutQ2(a, currentRadius, ringMembers, inchBack);
+                if (inQuadrant3(a)) {
+                    lastQuadrant = 3;
+                }                        
+                break;
+            case 3:
+                if (isMoreThanHalfQ3(lastArea)) {
+                    if (isVertical(a)) {
+                        rotateForward(a);
+                    }
+                }
+                else {
+                    if (isHorizontal(a)) {
+                        rotateForward(a);
+                    }                        
+                }
+                layoutQ3(a, currentRadius, ringMembers, inchBack);
+                if (inQuadrant4(a)) {
+                    lastQuadrant = 4;
+                }
+                break;
+            case 4:
+                if (isMoreThanHalfQ4(lastArea)) {
+                    if (isHorizontal(a)) {
+                        rotateForward(a);
+                    }
+                }
+                else {
+                    if (isVertical(a)) {
+                        rotateForward(a);
+                    }                        
+                }
+                layoutQ4(a, currentRadius, ringMembers, inchBack);
+                if (inQuadrant1(a)) {
+                    lastQuadrant = 1;
+                }
+                break;
+        }
+        
+        return lastQuadrant;
+    }
+    
     /*
         Q1        Q2        Q3        Q4
         
@@ -333,82 +406,17 @@ public class CircleOfLife {
             
             a = shapes[i];
             
-            // check quadrant
-            switch (lastQuadrant) {
-                case 1:
-                    if (isMoreThanHalfQ1(lastArea)) {
-                        if (isVertical(a)) {
-                            rotateForward(a);
-                        }
-                    }
-                    else {
-                        if (isHorizontal(a)) {
-                            rotateForward(a);
-                        }                        
-                    }
-                    layoutQ1(a, currentRadius, ringMembers, true);
-                    if (inQuadrant2(a)) {
-                        lastQuadrant = 2;
-                    }
-                    break;
-                case 2:
-                    if (isMoreThanHalfQ2(lastArea)) {
-                        if (isHorizontal(a)) {
-                            rotateForward(a);
-                        }
-                    }
-                    else {
-                        if (isVertical(a)) {
-                            rotateForward(a);
-                        }                        
-                    }
-                    layoutQ2(a, currentRadius, ringMembers, true);
-                    if (inQuadrant3(a)) {
-                        lastQuadrant = 3;
-                    }                        
-                    break;
-                case 3:
-                    if (isMoreThanHalfQ3(lastArea)) {
-                        if (isVertical(a)) {
-                            rotateForward(a);
-                        }
-                    }
-                    else {
-                        if (isHorizontal(a)) {
-                            rotateForward(a);
-                        }                        
-                    }
-                    layoutQ3(a, currentRadius, ringMembers, true);
-                    if (inQuadrant4(a)) {
-                        lastQuadrant = 4;
-                    }
-                    break;
-                case 4:
-                    if (isMoreThanHalfQ4(lastArea)) {
-                        if (isHorizontal(a)) {
-                            rotateForward(a);
-                        }
-                    }
-                    else {
-                        if (isVertical(a)) {
-                            rotateForward(a);
-                        }                        
-                    }
-                    layoutQ4(a, currentRadius, ringMembers, true);
-                    if (inQuadrant1(a)) {
-                        lastQuadrant = 1;
-                    }
-                    break;
-            }
+            int q = layoutHelper(lastQuadrant, a, currentRadius, ringMembers, true);
             
             if (hasOverlap(a, ringMembers)) {
                 currentRadius = (int) maxAreaDistance + gap;
 
-                layoutQ1(a, currentRadius, ringMembers, false);
-
+                q = layoutHelper(lastQuadrant, a, currentRadius, ringMembers, false);
+                
                 maxAreaDistance = 0;
             }
 
+            lastQuadrant = q;
             lastArea = a;
             ringMembers.add(a);
             maxAreaDistance = Math.max(maxAreaDistance, maxDistance(a, origin));
@@ -1034,7 +1042,7 @@ public class CircleOfLife {
             //shapes[i] = new Area(new Rectangle(0, 0, maxShapeWidth, maxShapeHeight));
         }
         
-        Arrays.sort(shapes, new AreaComparator());
+        //Arrays.sort(shapes, new AreaComparator());
         
         // layout shapes in circular manner
         Point2D origin = new Point2D.Double(maxWidth/2, maxHeight/2);
