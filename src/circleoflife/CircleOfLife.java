@@ -375,6 +375,61 @@ public class CircleOfLife {
         return lastQuadrant;
     }
     
+    private void layoutHelper2(Area a, ArrayDeque<Area> ringMembers) {
+        if (inQuadrant1(a)) {
+            
+        }
+        else if (inQuadrant2(a)) {
+            
+        }
+        else if (inQuadrant3(a)) {
+            
+        }
+        else {
+            
+        }
+    }
+    
+    public void layout2() {
+        int steps = 16;
+        
+        double[] angles = new double[steps];
+        for (int i=0; i<steps; ++i) {
+            angles[i] = 2 * Math.PI * i / steps;
+        }
+        
+        ArrayDeque<Area> ringMembers = new ArrayDeque<>();
+        int currentRadius = this.layoutBaseRadius;
+        int ox = (int) origin.getX();
+        int oy = (int) origin.getY();
+        
+        int numShapes = shapes.length;
+        for (int i=0; i<numShapes; ++i) {
+            Area a = shapes[i];
+            double halfDiag = diagonal(a)/2;
+            
+            for (double angle : angles) {
+                int x = (int) Math.ceil(ox + currentRadius * Math.sin(angle) + halfDiag);
+                int y = (int) Math.ceil(oy + currentRadius * Math.cos(angle) + halfDiag);
+                Point2D p = new Point2D.Double(x, y);
+                
+                // move to starting coord
+                move(a, p);
+                
+                if (!hasOverlap(a, ringMembers)) {
+                    // shape did not overlap at starting coord 
+                    
+                    // slide towards origin
+                    
+                    
+                    // calculate distance to origin
+                }
+            }
+            
+            // move to closest point
+        }
+    }
+    
     /*
         Q1        Q2        Q3        Q4
         
