@@ -437,206 +437,174 @@ public class CircleOfLife {
     }
     
     private void slideTowardsOrigin(Area a, ArrayDeque<Area> ringMembers) {
-        if (inQuadrant1(a)) {
-            if (isMoreThanHalfQ1(a)) {
-//                if (isVertical(a)) {
-//                    rotateForward(a);
-//                }
-                
-                while (true) {
-                    int dx = moveLeftSimple(a, ringMembers);
-                    int dy = moveDownSimple(a, ringMembers);
+        int q = getQuadrant(a);
+        
+        switch (q) {
+            case 1:
+                if (isMoreThanHalfQ1(a)) {
+                    while (true) {
+                        int dx = moveLeftSimple(a, ringMembers);
+                        int dy = moveDownSimple(a, ringMembers);
 
-                    if (dx >= 0 && dy <= 0) {
-                        break;
+                        if (dx >= 0 && dy <= 0) {
+                            break;
+                        }
+                    }
+
+                    while (true) {
+                        int dx = moveLeft(a, ringMembers);
+                        int dy = moveDown(a, ringMembers);
+
+                        if (dx >= 0 && dy <= 0) {
+                            break;
+                        }
                     }
                 }
-                
-                while (true) {
-                    int dx = moveLeft(a, ringMembers);
-                    int dy = moveDown(a, ringMembers);
+                else {                
+                    while (true) {
+                        int dy = moveDownSimple(a, ringMembers);
+                        int dx = moveLeftSimple(a, ringMembers);
 
-                    if (dx >= 0 && dy <= 0) {
-                        break;
+                        if (dx >= 0 && dy <= 0) {
+                            break;
+                        }
+                    }
+
+                    while (true) {
+                        int dy = moveDown(a, ringMembers);
+                        int dx = moveLeft(a, ringMembers);
+
+                        if (dx >= 0 && dy <= 0) {
+                            break;
+                        }
                     }
                 }
-            }
-            else {
-//                if (isHorizontal(a)) {
-//                    rotateForward(a);
-//                } 
-                
-                while (true) {
-                    int dy = moveDownSimple(a, ringMembers);
-                    int dx = moveLeftSimple(a, ringMembers);
+                break;
+            case 2:
+                if (isMoreThanHalfQ2(a)) {
+                    while (true) {
+                        int dy = moveUpSimple(a, ringMembers);
+                        int dx = moveLeftSimple(a, ringMembers);
 
-                    if (dx >= 0 && dy <= 0) {
-                        break;
+                        if (dy >= 0 && dx >= 0) {
+                            break;
+                        }
+                    }
+
+                    while (true) {
+                        int dy = moveUp(a, ringMembers);
+                        int dx = moveLeft(a, ringMembers);
+
+                        if (dy >= 0 && dx >= 0) {
+                            break;
+                        }
                     }
                 }
-                
-                while (true) {
-                    int dy = moveDown(a, ringMembers);
-                    int dx = moveLeft(a, ringMembers);
+                else {
+                    while (true) {
+                        int dx = moveLeftSimple(a, ringMembers);
+                        int dy = moveUpSimple(a, ringMembers);
 
-                    if (dx >= 0 && dy <= 0) {
-                        break;
+                        if (dy >= 0 && dx >= 0) {
+                            break;
+                        }                
+                    }
+
+                    while (true) {
+                        int dx = moveLeft(a, ringMembers);
+                        int dy = moveUp(a, ringMembers);
+
+                        if (dy >= 0 && dx >= 0) {
+                            break;
+                        }                
                     }
                 }
-            }
-            
-        }
-        else if (inQuadrant2(a)) {
-            if (isMoreThanHalfQ2(a)) {
-//                if (isHorizontal(a)) {
-//                    rotateForward(a);
-//                }
-                
-                while (true) {
-                    int dy = moveUpSimple(a, ringMembers);
-                    int dx = moveLeftSimple(a, ringMembers);
+                break;
+            case 3:
+                if (isMoreThanHalfQ3(a)) {
+                    while (true) {
+                        int dx = moveRightSimple(a, ringMembers);
+                        int dy = moveUpSimple(a, ringMembers);
 
-                    if (dy >= 0 && dx >= 0) {
-                        break;
+                        if (dx <= 0 && dy >= 0) {
+                            break;
+                        }
+                    }
+
+                    while (true) {
+                        int dx = moveRight(a, ringMembers);
+                        int dy = moveUp(a, ringMembers);
+
+                        if (dx <= 0 && dy >= 0) {
+                            break;
+                        }
                     }
                 }
-                
-                while (true) {
-                    int dy = moveUp(a, ringMembers);
-                    int dx = moveLeft(a, ringMembers);
+                else {
+                    while (true) {
+                        int dy = moveUpSimple(a, ringMembers);
+                        int dx = moveRightSimple(a, ringMembers);
 
-                    if (dy >= 0 && dx >= 0) {
-                        break;
+                        if (dx <= 0 && dy >= 0) {
+                            break;
+                        }
+                    }
+
+                    while (true) {
+                        int dy = moveUp(a, ringMembers);
+                        int dx = moveRight(a, ringMembers);
+
+                        if (dx <= 0 && dy >= 0) {
+                            break;
+                        }
                     }
                 }
-            }
-            else {
-//                if (isVertical(a)) {
-//                    rotateForward(a);
-//                }                        
-                
-                while (true) {
-                    int dx = moveLeftSimple(a, ringMembers);
-                    int dy = moveUpSimple(a, ringMembers);
+                break;
+            case 4:
+                if (isMoreThanHalfQ4(a)) {
+                    while (true) {
+                        int dy = moveDownSimple(a, ringMembers);
+                        int dx = moveRightSimple(a, ringMembers);
 
-                    if (dy >= 0 && dx >= 0) {
-                        break;
-                    }                
-                }
-                
-                while (true) {
-                    int dx = moveLeft(a, ringMembers);
-                    int dy = moveUp(a, ringMembers);
+                        if (dy <= 0 && dx <= 0) {
+                            break;
+                        }
+                    }
 
-                    if (dy >= 0 && dx >= 0) {
-                        break;
-                    }                
-                }
-            }
-            
-        }
-        else if (inQuadrant3(a)) {
-            if (isMoreThanHalfQ3(a)) {
-//                if (isVertical(a)) {
-//                    rotateForward(a);
-//                }
-                
-                while (true) {
-                    int dx = moveRightSimple(a, ringMembers);
-                    int dy = moveUpSimple(a, ringMembers);
+                    while (true) {
+                        int dy = moveDown(a, ringMembers);
+                        int dx = moveRight(a, ringMembers);
 
-                    if (dx <= 0 && dy >= 0) {
-                        break;
+                        if (dy <= 0 && dx <= 0) {
+                            break;
+                        }
                     }
                 }
-                
-                while (true) {
-                    int dx = moveRight(a, ringMembers);
-                    int dy = moveUp(a, ringMembers);
+                else {
+                    while (true) {
+                        int dx = moveRightSimple(a, ringMembers);
+                        int dy = moveDownSimple(a, ringMembers);
 
-                    if (dx <= 0 && dy >= 0) {
-                        break;
+                        if (dx <= 0 && dy <= 0) {
+                            break;
+                        }
+                    }
+
+                    while (true) {
+                        int dx = moveRight(a, ringMembers);
+                        int dy = moveDown(a, ringMembers);
+
+                        if (dx <= 0 && dy <= 0) {
+                            break;
+                        }
                     }
                 }
-            }
-            else {
-//                if (isHorizontal(a)) {
-//                    rotateForward(a);
-//                }
-                
-                while (true) {
-                    int dy = moveUpSimple(a, ringMembers);
-                    int dx = moveRightSimple(a, ringMembers);
-
-                    if (dx <= 0 && dy >= 0) {
-                        break;
-                    }
-                }
-                
-                while (true) {
-                    int dy = moveUp(a, ringMembers);
-                    int dx = moveRight(a, ringMembers);
-
-                    if (dx <= 0 && dy >= 0) {
-                        break;
-                    }
-                }
-            }
-            
-        }
-        else {
-            if (isMoreThanHalfQ4(a)) {
-//                if (isHorizontal(a)) {
-//                    rotateForward(a);
-//                }
-                
-                while (true) {
-                    int dy = moveDownSimple(a, ringMembers);
-                    int dx = moveRightSimple(a, ringMembers);
-
-                    if (dy <= 0 && dx <= 0) {
-                        break;
-                    }
-                }
-                
-                while (true) {
-                    int dy = moveDown(a, ringMembers);
-                    int dx = moveRight(a, ringMembers);
-
-                    if (dy <= 0 && dx <= 0) {
-                        break;
-                    }
-                }
-            }
-            else {
-//                if (isVertical(a)) {
-//                    rotateForward(a);
-//                }
-                
-                while (true) {
-                    int dx = moveRightSimple(a, ringMembers);
-                    int dy = moveDownSimple(a, ringMembers);
-
-                    if (dx <= 0 && dy <= 0) {
-                        break;
-                    }
-                }
-                
-                while (true) {
-                    int dx = moveRight(a, ringMembers);
-                    int dy = moveDown(a, ringMembers);
-
-                    if (dx <= 0 && dy <= 0) {
-                        break;
-                    }
-                }
-            }
-            
+                break;
         }
     }
     
     public void layout2() {
-        int steps = 32;
+        int steps = 64;
         
         double[] angles = new double[steps];
         for (int i=0; i<steps; ++i) {
@@ -1235,7 +1203,7 @@ public class CircleOfLife {
         int x = bounds.x;
         int y = bounds.y;
         
-        double yMax = origin.getY() - bounds.height;
+        double yMax = origin.getY();
         
         while (y < yMax) {
             ++y;
@@ -1257,7 +1225,7 @@ public class CircleOfLife {
         int x = bounds.x;
         int y = bounds.y;
         
-        double xMin = origin.getX();
+        double xMin = origin.getX() - bounds.width;
         
         while (x > xMin) {
             --x;
@@ -1279,7 +1247,7 @@ public class CircleOfLife {
         int x = bounds.x;
         int y = bounds.y;
         
-        double yMin = origin.getY();
+        double yMin = origin.getY() - bounds.height;
         
         while (y > yMin) {
             --y;
@@ -1301,7 +1269,7 @@ public class CircleOfLife {
         int x = bounds.x;
         int y = bounds.y;
         
-        double xMax = origin.getX() + bounds.width;
+        double xMax = origin.getX();
         
         while (x < xMax) {
             ++x;
@@ -1413,6 +1381,34 @@ public class CircleOfLife {
     private static boolean isHorizontal(Area a) {
         Rectangle b = a.getBounds();
         return b.width > b.height;
+    }
+    
+    private int getQuadrant(double x, double y) {
+        double ox = origin.getX();
+        double oy = origin.getY();
+
+        if (y <= oy && x >= ox) {
+            return 1;
+        }
+
+        if (y >= oy && x >= ox) {
+            return 2;
+        }
+
+        if (y >= oy && x <= ox) {
+            return 3;
+        }
+        
+        if (y <= oy && x <= ox) {
+            return 4;
+        }
+
+        return -1;
+    }
+    
+    private int getQuadrant(Area a) {
+        Rectangle b = a.getBounds();
+        return getQuadrant(b.getCenterX(), b.getCenterY());
     }
     
     private boolean inQuadrant1(Area a) {
