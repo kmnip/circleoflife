@@ -56,7 +56,7 @@ public class CircleOfLife {
         this.baseCircle = new Area(new Ellipse2D.Double(origin.getX()-layoutBaseRadius, origin.getY()-layoutBaseRadius, 2*layoutBaseRadius, 2*layoutBaseRadius));
     }
     
-    public class MyShape {
+    public static class MyShape {
         Area area;
         String id;
         int numRotations;
@@ -89,7 +89,35 @@ public class CircleOfLife {
         }
     }
     
-    public static Area createArea(int width, int height, int[] rows, int[] cols) {
+    public static MyShape parseLine(String line) {
+        /*
+        ID WIDTH HEIGHT X_MIN_1 X_MAX_1 ... X_MIN_H X_MAX_H Y_MIN_1 Y_MAX_1 ... Y_MIN_W Y_MAX_W
+        */
+        String[] items = line.trim().split("\t");
+        
+        String id = items[0];
+        int width = Integer.parseInt(items[1]);
+        int height = Integer.parseInt(items[2]);
+        
+        int[] rows = new int[height*2];
+        int[] cols = new int[width*2];
+        
+        int base = 3;
+        for (int i=0; i<height*2; ++i) {
+            rows[i] = Integer.parseInt(items[i+base]);
+        }
+
+        base = 3 + height * 2;
+        for (int i=0; i<width*2; ++i) {
+            cols[i] = Integer.parseInt(items[i+base]);
+        }
+        
+        Area a = createArea(width, height, rows, cols);
+        
+        return new MyShape(a, id);
+    }
+    
+    private static Area createArea(int width, int height, int[] rows, int[] cols) {
         // initial area is rectangle
         Area a = new Area(new Rectangle(0, 0, width, height));
 
