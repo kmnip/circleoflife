@@ -134,6 +134,12 @@ public class CircleOfLife {
         return s;
     }
     
+    public static void shift(Area a, int x, int y) {
+        AffineTransform t = new AffineTransform();
+        t.translate(x, y);
+        a.transform(t);
+    }
+    
     public static void move(Area a, Point2D p) {
         // move area's midpoint to given point
         AffineTransform t = new AffineTransform();
@@ -1642,10 +1648,34 @@ public class CircleOfLife {
         Point2D origin = new Point2D.Double(maxWidth/2, maxHeight/2);
         CircleOfLife life = new CircleOfLife(shapes, origin, layoutBaseRadius, gap);
         life.layout2();
-        //shapes = simulatedAnnealing(shapes, origin, layoutBaseRadius, numShapes * 10, gap);
+        
+        // find min x, max x, min y, max y
+        int minX = Integer.MAX_VALUE;
+        int minY = Integer.MAX_VALUE;
+        int maxX = Integer.MIN_VALUE;
+        int maxY = Integer.MIN_VALUE;
+        for (Area a : shapes) {
+            Rectangle2D r = a.getBounds2D();
+            minX = (int) Math.min(minX, r.getMinX());
+            minY = (int) Math.min(minY, r.getMinY());
+            maxX = (int) Math.max(maxX, r.getMaxX());
+            maxY = (int) Math.max(maxY, r.getMaxY());
+        }
+        
+        // shift towards top left corner
+        for (Area a : shapes) {
+            shift(a, -minX, -minY);
+        }
+        
+        // shift origin
+        origin = new Point2D.Double(origin.getX()-minX, origin.getY()-minY);
+        
+        // new image dimensions
+        int newWidth = maxX - minX + 1;
+        int newHeight = maxY - minY + 1;
         
         // output to an image
-        BufferedImage bi = new BufferedImage(maxWidth, maxHeight, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage bi = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_ARGB);
         Graphics2D ig2 = bi.createGraphics();
         ig2.setPaint(Color.black);
                 
