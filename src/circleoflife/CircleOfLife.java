@@ -58,16 +58,16 @@ public class CircleOfLife {
     
     public class MyShape {
         Area area;
-        int id;
+        String id;
         int numRotations;
         
-        public MyShape(Area area, int id) {
+        public MyShape(Area area, String id) {
             this.id = id;
             this.area = area;
             this.numRotations = 0;
         }
         
-        public MyShape(Area area, int id, int numRotations) {
+        public MyShape(Area area, String id, int numRotations) {
             this.id = id;
             this.area = area;
             this.numRotations = numRotations;
@@ -87,11 +87,33 @@ public class CircleOfLife {
         public Point getPosition() {
             return this.area.getBounds().getLocation();
         }
-        
-        @Override
-        public MyShape clone() {
-            return new MyShape((Area) area.clone(), this.id, this.numRotations);
+    }
+    
+    public static Area createArea(int width, int height, int[] rows, int[] cols) {
+        // initial area is rectangle
+        Area a = new Area(new Rectangle(0, 0, width, height));
+
+        // slice out left and right portions of each row
+        for (int i=0; i<height; ++i) {
+            int index = i*2;
+            int minX = rows[index];
+            int maxX = rows[index+1];
+            
+            a.subtract(new Area(new Rectangle(0, i, minX-1, 1)));
+            a.subtract(new Area(new Rectangle(maxX+1, i, width-1-maxX, 1)));
         }
+        
+        // slice out top and bottom portions of each column
+        for (int i=0; i<width; ++i) {
+            int index = i*2;
+            int minY = cols[index];
+            int maxY = cols[index+1];
+            
+            a.subtract(new Area(new Rectangle(i, 0, 1, minY-1)));
+            a.subtract(new Area(new Rectangle(i, maxY+1, 1, height-1-maxY)));
+        }
+        
+        return a;
     }
     
     public static Area getRandomShape(int maxWidth, int maxHeight, int reshapeIterations) {
@@ -1639,7 +1661,6 @@ public class CircleOfLife {
         Area[] shapes = new Area[numShapes];
         for (int i=0; i<numShapes; ++i) {
             shapes[i] = getRandomShape(maxShapeWidth, maxShapeHeight, reshapeIterations);
-            //shapes[i] = new Area(new Rectangle(0, 0, maxShapeWidth, maxShapeHeight));
         }
         
         Arrays.sort(shapes, new AreaComparatorReversed());
