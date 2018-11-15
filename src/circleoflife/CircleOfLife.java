@@ -42,13 +42,13 @@ import javax.imageio.ImageIO;
 public class CircleOfLife {    
     public static Random randNumGen = new Random();
     
-    private final Area[] shapes;
+    private final MyShape[] shapes;
     private final Point2D origin;
     private final int layoutBaseRadius;
     private final Area baseCircle;
     private final int gap;
     
-    public CircleOfLife(Area[] shapes, Point2D origin, int layoutBaseRadius, int gap) {
+    public CircleOfLife(MyShape[] shapes, Point2D origin, int layoutBaseRadius, int gap) {
         this.shapes = shapes;
         this.origin = origin;
         this.layoutBaseRadius = layoutBaseRadius;
@@ -674,9 +674,9 @@ public class CircleOfLife {
         
         int numShapes = shapes.length;
         for (int i=0; i<numShapes; ++i) {
-            System.out.println(i);
+            //System.out.println(i);
             
-            Area a = shapes[i];
+            Area a = shapes[i].area;
             double diag = diagonal(a);
             
             double bestDistance = Double.POSITIVE_INFINITY;
@@ -733,7 +733,7 @@ public class CircleOfLife {
         
         int currentRadius = this.layoutBaseRadius;
         int lastQuadrant = 1;
-        Area a = shapes[0];
+        Area a = shapes[0].area;
         if (isHorizontal(a)) {
             rotateForward(a);
         }  
@@ -746,7 +746,7 @@ public class CircleOfLife {
         for (int i=1; i<numAreas; ++i) {
             System.out.println(i);
             
-            a = shapes[i];
+            a = shapes[i].area;
             
             int q = layoutHelper(lastQuadrant, a, currentRadius, ringMembers, true);
             
@@ -1662,6 +1662,24 @@ public class CircleOfLife {
         }
     }
     
+    public static class MyShapeComparator implements Comparator<MyShape> {
+        @Override
+        public int compare(MyShape a, MyShape b) {
+            Rectangle ar = a.area.getBounds();
+            Rectangle br = b.area.getBounds();
+            return ar.height * ar.width - br.height * br.width;
+        }
+    }
+    
+    public static class MyShapeReversedComparator implements Comparator<MyShape> {
+        @Override
+        public int compare(MyShape a, MyShape b) {
+            Rectangle ar = b.area.getBounds();
+            Rectangle br = a.area.getBounds();
+            return ar.height * ar.width - br.height * br.width;
+        }
+    }
+    
     /**
      * @param args the command line arguments
      */
@@ -1686,12 +1704,13 @@ public class CircleOfLife {
         }
         
         // generate random shapes
-        Area[] shapes = new Area[numShapes];
+        MyShape[] shapes = new MyShape[numShapes];
         for (int i=0; i<numShapes; ++i) {
-            shapes[i] = getRandomShape(maxShapeWidth, maxShapeHeight, reshapeIterations);
+            Area a = getRandomShape(maxShapeWidth, maxShapeHeight, reshapeIterations);
+            shapes[i] = new MyShape(a, Integer.toString(i));
         }
         
-        Arrays.sort(shapes, new AreaComparatorReversed());
+        Arrays.sort(shapes, new MyShapeReversedComparator());
         
         // layout shapes in circular manner
         Point2D origin = new Point2D.Double(maxWidth/2, maxHeight/2);
@@ -1703,8 +1722,8 @@ public class CircleOfLife {
         int minY = Integer.MAX_VALUE;
         int maxX = Integer.MIN_VALUE;
         int maxY = Integer.MIN_VALUE;
-        for (Area a : shapes) {
-            Rectangle2D r = a.getBounds2D();
+        for (MyShape a : shapes) {
+            Rectangle2D r = a.area.getBounds2D();
             minX = (int) Math.min(minX, r.getMinX());
             minY = (int) Math.min(minY, r.getMinY());
             maxX = (int) Math.max(maxX, r.getMaxX());
@@ -1712,8 +1731,8 @@ public class CircleOfLife {
         }
         
         // shift towards top left corner
-        for (Area a : shapes) {
-            shift(a, -minX, -minY);
+        for (MyShape a : shapes) {
+            shift(a.area, -minX, -minY);
         }
         
         // shift origin
@@ -1729,25 +1748,25 @@ public class CircleOfLife {
         ig2.setPaint(Color.black);
                 
         // fill all areas
-        for (Area s : shapes) {
-            ig2.fill(s);
+        for (MyShape s : shapes) {
+            ig2.fill(s.area);
         }
         
         // draw outlines for all areas
         ig2.setPaint(Color.MAGENTA);
-        for (Area s : shapes) {
-            ig2.draw(s);
+        for (MyShape s : shapes) {
+            ig2.draw(s.area);
         }
         
         Font font = ig2.getFont();
         font = new Font(font.getName(), font.getStyle(), 30);
         ig2.setFont(font);
         
-        for (int i=0; i<numShapes; ++i) {
-            Rectangle r = shapes[i].getBounds();
+        for (MyShape s : shapes) {
+            Rectangle r = s.area.getBounds();
             int x = (int) r.getCenterX();
             int y = (int) r.getCenterY();
-            ig2.drawString(Integer.toString(i+1), x, y);
+            ig2.drawString(s.id, x, y);
         }
         
         // draw layout circle
