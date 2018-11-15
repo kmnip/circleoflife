@@ -60,29 +60,33 @@ public class CircleOfLife {
     private static class MyShape {
         Area area;
         String id;
-        int numRotations;
+        int orientation;
         
         public MyShape(Area area, String id) {
             this.id = id;
             this.area = area;
-            this.numRotations = 0;
+            this.orientation = 0;
         }
         
-        public MyShape(Area area, String id, int numRotations) {
+        public MyShape(Area area, String id, int orientation) {
             this.id = id;
             this.area = area;
-            this.numRotations = numRotations;
+            this.orientation = orientation;
         }
         
         public void rotate() {
-            if (numRotations >= 3) {
-                numRotations = 0;
-            }
-            else {
-                ++numRotations;
-            }
-            
             rotateForward(area);
+            ++orientation;
+            
+            if (orientation > 3) {
+                orientation = 0;
+            }
+        }
+        
+        public void rotate(int orientation) {
+            while (this.orientation != orientation) {
+                this.rotate();
+            }
         }
         
         public Point getPosition() {
@@ -643,6 +647,7 @@ public class CircleOfLife {
             double diag = diagonal(a);
             
             double bestDistance = Double.POSITIVE_INFINITY;
+            int bestOrientation = -1;
             Point2D bestCoord = null;
             
             while (bestCoord == null) {
@@ -651,21 +656,26 @@ public class CircleOfLife {
                     int y = (int) Math.ceil(oy + (currentRadius + diag) * Math.cos(angle));
                     Point2D p = new Point2D.Double(x, y);
 
-                    // move to starting coord
-                    moveNW(a, p);
+                    for (int i=0; i<4; ++i) {
+                        s.rotate(i);
+                        
+                        // move to starting coord
+                        moveNW(a, p);
 
-                    if (!overlapsBaseCircle(a) && !hasOverlap(a, ringMembers)) {
-                        // shape did not overlap at starting coord 
+                        if (!overlapsBaseCircle(a) && !hasOverlap(a, ringMembers)) {
+                            // shape did not overlap at starting coord 
 
-                        // slide towards origin
-                        slideTowardsOrigin(a, ringMembers);
+                            // slide towards origin
+                            slideTowardsOrigin(a, ringMembers);
 
-                        // calculate distance to origin
-                        double d = distance(a, origin);
-                        if (d < bestDistance) {
-                            bestDistance = d;
-                            Rectangle2D bound = a.getBounds();
-                            bestCoord = new Point2D.Double(bound.getX(), bound.getY());
+                            // calculate distance to origin
+                            double d = distance(a, origin);
+                            if (d < bestDistance) {
+                                bestDistance = d;
+                                bestOrientation = s.orientation;
+                                Rectangle2D bound = a.getBounds();
+                                bestCoord = new Point2D.Double(bound.getX(), bound.getY());
+                            }
                         }
                     }
                 }
@@ -676,6 +686,7 @@ public class CircleOfLife {
             }
             
             // move to closest point
+            s.rotate(bestOrientation);
             moveNW(a, bestCoord);
             ringMembers.add(a);
         }
@@ -1674,11 +1685,11 @@ public class CircleOfLife {
         }
         
         // shift towards top left corner
-        for (MyShape a : shapes) {
-            shift(a.area, -minX, -minY);
+        for (MyShape s : shapes) {
+            shift(s.area, -minX, -minY);
             
-            Point p = a.getPosition();
-            System.out.println(a.id + '\t' + p.x + '\t' + p.y);
+            Point p = s.getPosition();
+            System.out.println(s.id + '\t' + p.x + '\t' + p.y + '\t' + s.orientation);
         }
         
         // shift origin
