@@ -23,14 +23,15 @@ import static java.awt.geom.PathIterator.SEG_QUADTO;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -40,8 +41,7 @@ import javax.imageio.ImageIO;
  *
  * @author kmnip
  */
-public class CircleOfLife {    
-    public static Random randNumGen = new Random();
+public class CircleOfLife {
     
     private final ArrayList<MyShape> shapes;
     private final Point2D origin;
@@ -57,7 +57,7 @@ public class CircleOfLife {
         this.baseCircle = new Area(new Ellipse2D.Double(origin.getX()-layoutBaseRadius, origin.getY()-layoutBaseRadius, 2*layoutBaseRadius, 2*layoutBaseRadius));
     }
     
-    public static class MyShape {
+    private static class MyShape {
         Area area;
         String id;
         int numRotations;
@@ -90,7 +90,7 @@ public class CircleOfLife {
         }
     }
     
-    public static MyShape parseLine(String line) {
+    private static MyShape parseLine(String line) {
         /*
         ID WIDTH HEIGHT X_MIN_1 X_MAX_1 ... X_MIN_H X_MAX_H Y_MIN_1 Y_MAX_1 ... Y_MIN_W Y_MAX_W
         */
@@ -145,7 +145,7 @@ public class CircleOfLife {
         return a;
     }
     
-    public static Area getRandomShape(int maxWidth, int maxHeight, int reshapeIterations) {
+    private static Area getRandomShape(int maxWidth, int maxHeight, int reshapeIterations) {
         // randomize width and height
         int width = ThreadLocalRandom.current().nextInt(maxWidth/2, maxWidth + 1);
         int height = ThreadLocalRandom.current().nextInt(maxHeight/2, maxHeight + 1);
@@ -162,36 +162,36 @@ public class CircleOfLife {
         
         for (int i=0; i<reshapeIterations; ++i) {
             // top left corner
-            w = randNumGen.nextInt(maxSliceWidth);
-            h = randNumGen.nextInt(maxSliceHeight);                
+            w = ThreadLocalRandom.current().nextInt(maxSliceWidth);
+            h = ThreadLocalRandom.current().nextInt(maxSliceHeight);                
             s.subtract(new Area(new Rectangle(0, 0, w, h)));
 
             // top right corner
-            w = randNumGen.nextInt(maxSliceWidth);
-            h = randNumGen.nextInt(maxSliceHeight);
+            w = ThreadLocalRandom.current().nextInt(maxSliceWidth);
+            h = ThreadLocalRandom.current().nextInt(maxSliceHeight);
             s.subtract(new Area(new Rectangle(width-w, 0, w, h)));
 
             // bottom right corner
-            w = randNumGen.nextInt(maxSliceWidth);
-            h = randNumGen.nextInt(maxSliceHeight);
+            w = ThreadLocalRandom.current().nextInt(maxSliceWidth);
+            h = ThreadLocalRandom.current().nextInt(maxSliceHeight);
             s.subtract(new Area(new Rectangle(width-w, height-h, w, h)));
 
             // bottom left corner
-            w = randNumGen.nextInt(maxSliceWidth);
-            h = randNumGen.nextInt(maxSliceHeight);
+            w = ThreadLocalRandom.current().nextInt(maxSliceWidth);
+            h = ThreadLocalRandom.current().nextInt(maxSliceHeight);
             s.subtract(new Area(new Rectangle(0, height-h, w, h)));
         }
         
         return s;
     }
     
-    public static void shift(Area a, int x, int y) {
+    private static void shift(Area a, int x, int y) {
         AffineTransform t = new AffineTransform();
         t.translate(x, y);
         a.transform(t);
     }
     
-    public static void move(Area a, Point2D p) {
+    private static void move(Area a, Point2D p) {
         // move area's midpoint to given point
         AffineTransform t = new AffineTransform();
         Rectangle r = a.getBounds();
@@ -235,11 +235,11 @@ public class CircleOfLife {
         rotate(a, 1);
     }
     
-    public static void rotateBackward(Area a) {
+    private static void rotateBackward(Area a) {
         rotate(a, 3);
     }
     
-    public static void rotate(Area a, int numQuadrants) {
+    private static void rotate(Area a, int numQuadrants) {
         Rectangle r = a.getBounds();
         
         AffineTransform at = new AffineTransform();
@@ -248,11 +248,11 @@ public class CircleOfLife {
         a.transform(at);
     }
     
-    public static boolean hasSimpleOverlap(Area a1, Area a2) {
+    private static boolean hasSimpleOverlap(Area a1, Area a2) {
         return a1.intersects(a2.getBounds2D());
     }
     
-    public boolean overlapsBaseCircle(Area a) {
+    private boolean overlapsBaseCircle(Area a) {
         if (a.intersects(baseCircle.getBounds2D())) {
             float[] point = new float[2];
             
@@ -294,7 +294,7 @@ public class CircleOfLife {
         return false;
     }
     
-    public static boolean hasOverlap(Area a1, Area a2) {
+    private static boolean hasOverlap(Area a1, Area a2) {
         if (a1.intersects(a2.getBounds2D())) {
             float[] point = new float[2];
             
@@ -318,7 +318,7 @@ public class CircleOfLife {
         return false;
     }
     
-    public static boolean hasOverlap(Area a, ArrayDeque<Area> others) {
+    private static boolean hasOverlap(Area a, ArrayDeque<Area> others) {
         for (Area other : others) {
             if (hasOverlap(a, other)) {
                 return true;
@@ -328,7 +328,7 @@ public class CircleOfLife {
         return false;
     }
     
-    public static boolean hasSimpleOverlap(Area a, ArrayDeque<Area> others) {
+    private static boolean hasSimpleOverlap(Area a, ArrayDeque<Area> others) {
         for (Area other : others) {
             if (hasSimpleOverlap(a, other)) {
                 return true;
@@ -338,7 +338,7 @@ public class CircleOfLife {
         return false;        
     }
     
-    public static boolean hasOverlap(Area a, ArrayList<ArrayDeque<Area>> layers) {
+    private static boolean hasOverlap(Area a, ArrayList<ArrayDeque<Area>> layers) {
         for (ArrayDeque<Area> others : layers) {
             if (hasOverlap(a, others)) {
                 return true;
@@ -347,12 +347,12 @@ public class CircleOfLife {
         return false;
     }
     
-    public static double diagonal(Area a) {
+    private static int diagonal(Area a) {
         Rectangle b = a.getBounds();
-        return Math.sqrt(Math.pow(b.width, 2) + Math.pow(b.height, 2));
+        return (int) Math.ceil(Math.sqrt(b.width*b.width + b.height*b.height));
     }
     
-    public static double distance(Area a1, Area a2) {
+    private static double distance(Area a1, Area a2) {
         // distance between center points of 2 areas
         
         Rectangle b1 = a1.getBounds();
@@ -362,7 +362,7 @@ public class CircleOfLife {
         return c1.distance(b2.getCenterX(), b2.getCenterY());
     }
     
-    public static double distance(Area a, Point2D p) {
+    private static double distance(Area a, Point2D p) {
         // distance between center point of area to point
         
         Rectangle b = a.getBounds();
@@ -370,7 +370,7 @@ public class CircleOfLife {
         return c.distance(p);
     }
     
-    public static double maxDistance(Area a, Point2D p) {
+    private static double maxDistance(Area a, Point2D p) {
         double maxDistance = 0;
         
         PathIterator itr = a.getPathIterator(null);
@@ -382,44 +382,7 @@ public class CircleOfLife {
             
         return maxDistance;
     }
-    
-    public static int numOverlaps(Area a, Area[] areas) {
-        int numOverlaps = 0;
-        
-        for (Area other : areas) {
-            if (other != a) {
-                if (hasOverlap(a, other)) {
-                    ++numOverlaps;
-                }
-            }
-        }
-        
-        return numOverlaps;
-    }
-    
-    private static double overlappingDistances(Area a, Area[] areas) {
-        double total = 0;
-        
-        for (Area other : areas) {
-            if (other != a) {
-                if (hasOverlap(a, other)) {
-                    // use the inverse distance for the sake of simplicity
-                    total += 1.0d/distance(a, other);
-                }
-            }
-        }
-        
-        return total;
-    }
-    
-    public static double energy(Area[] areas, Point2D origin) {
-        double e = 0;
-        for (Area a : areas) {
-            e += 1/distance(a, origin);
-        }
-        return e;
-    }
-    
+                
     private int layoutHelper(int lastQuadrant, Area a, int currentRadius, ArrayDeque<Area> ringMembers, boolean inchBack) {
         Area lastArea = ringMembers.getLast();
         
@@ -660,7 +623,7 @@ public class CircleOfLife {
         }
     }
     
-    public void layout2() {
+    private void layout2() {
         int steps = 64;
         
         double[] angles = new double[steps];
@@ -726,7 +689,7 @@ public class CircleOfLife {
          |/        ||_|        |_||        \|
          o---->    v              v    <----o
     */
-    public void layout() {
+    private void layout() {
         // layout areas around the circle
 
         ArrayDeque<Area> ringMembers = new ArrayDeque<>();
@@ -1559,7 +1522,7 @@ public class CircleOfLife {
         return (ox - maxX) < (oy - maxY);
     }
     
-    public int checkQuadrant(Point2D p) {
+    private int checkQuadrant(Point2D p) {
         double ox = origin.getX();
         double oy = origin.getY();
         double px = p.getX();
@@ -1581,7 +1544,7 @@ public class CircleOfLife {
         return -1;
     }
         
-    public static class AreaComparator implements Comparator<Area> {
+    private static class AreaComparator implements Comparator<Area> {
 
         @Override
         public int compare(Area a, Area b) {
@@ -1591,7 +1554,7 @@ public class CircleOfLife {
         }
     }
     
-    public static class AreaComparatorReversed implements Comparator<Area> {
+    private static class AreaComparatorReversed implements Comparator<Area> {
 
         @Override
         public int compare(Area a, Area b) {
@@ -1601,7 +1564,7 @@ public class CircleOfLife {
         }
     }
     
-    public static class MyShapeComparator implements Comparator<MyShape> {
+    private static class MyShapeComparator implements Comparator<MyShape> {
         @Override
         public int compare(MyShape a, MyShape b) {
             Rectangle ar = a.area.getBounds();
@@ -1610,7 +1573,7 @@ public class CircleOfLife {
         }
     }
     
-    public static class MyShapeReversedComparator implements Comparator<MyShape> {
+    private static class MyShapeReversedComparator implements Comparator<MyShape> {
         @Override
         public int compare(MyShape a, MyShape b) {
             Rectangle ar = b.area.getBounds();
@@ -1619,10 +1582,23 @@ public class CircleOfLife {
         }
     }
     
+    private static int estimateLayoutWidth(int baseRadius, int numShapes, int maxDiagonal, int gap) {
+        int radius = baseRadius;
+        
+        for (; numShapes > 0; radius += maxDiagonal + gap) {
+            int circumference = (int) Math.floor(2 * Math.PI * radius);
+            int numShapesFitted = circumference/(maxDiagonal + gap);
+            numShapes -= numShapesFitted;
+        }
+        
+        return 2*radius + 2*gap;
+    }
+    
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+        /*
         // max dimensions of each shape
         int maxShapeWidth = 200;
         int maxShapeHeight = 200;
@@ -1648,12 +1624,39 @@ public class CircleOfLife {
             Area a = getRandomShape(maxShapeWidth, maxShapeHeight, reshapeIterations);
             shapes.add(new MyShape(a, Integer.toString(i)));
         }
+        */
+        
+        // /home/gengar/sandbox/shapes.tsv /home/gengar/sandbox/circleOfLife.png
+        String shapesDimensionsPath = args[0];
+        String outputImagePath = args[1];
+        
+        ArrayList<MyShape> shapes = new ArrayList<>();
+        int maxDiagonal = 0;
+        
+        try {
+            BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(shapesDimensionsPath)));
+            for (String line = br.readLine(); line != null; line = br.readLine()) {
+                MyShape s = parseLine(line);
+                shapes.add(s);
+                
+                maxDiagonal = Math.max(maxDiagonal, diagonal(s.area));
+            }
+            br.close();
+        }
+        catch (IOException e) {
+            System.err.println(e.getMessage());
+            System.exit(SEG_CLOSE);
+        }
+        
+        int layoutBaseRadius = 10;
+        int gap = 0;
+        int maxLayoutWidth = estimateLayoutWidth(layoutBaseRadius, shapes.size(), maxDiagonal, gap);
         
         // sort shapes from largest to smallest
         Collections.sort(shapes, new MyShapeReversedComparator());
         
         // layout shapes in circular manner
-        Point2D origin = new Point2D.Double(maxWidth/2, maxHeight/2);
+        Point2D origin = new Point2D.Double(maxLayoutWidth/2, maxLayoutWidth/2);
         CircleOfLife life = new CircleOfLife(shapes, origin, layoutBaseRadius, gap);
         life.layout2();
         
@@ -1673,6 +1676,9 @@ public class CircleOfLife {
         // shift towards top left corner
         for (MyShape a : shapes) {
             shift(a.area, -minX, -minY);
+            
+            Point p = a.getPosition();
+            System.out.println(a.id + '\t' + p.x + '\t' + p.y);
         }
         
         // shift origin
@@ -1716,7 +1722,7 @@ public class CircleOfLife {
         
         // write image
         try {
-            ImageIO.write(bi, "PNG", new File(System.getProperty("user.home") + "/sandbox/circleOfLife.png"));
+            ImageIO.write(bi, "PNG", new File(outputImagePath));
         } catch (IOException ex) {
             Logger.getLogger(CircleOfLife.class.getName()).log(Level.SEVERE, null, ex);
         }
