@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
@@ -42,13 +43,13 @@ import javax.imageio.ImageIO;
 public class CircleOfLife {    
     public static Random randNumGen = new Random();
     
-    private final MyShape[] shapes;
+    private final ArrayList<MyShape> shapes;
     private final Point2D origin;
     private final int layoutBaseRadius;
     private final Area baseCircle;
     private final int gap;
     
-    public CircleOfLife(MyShape[] shapes, Point2D origin, int layoutBaseRadius, int gap) {
+    public CircleOfLife(ArrayList<MyShape> shapes, Point2D origin, int layoutBaseRadius, int gap) {
         this.shapes = shapes;
         this.origin = origin;
         this.layoutBaseRadius = layoutBaseRadius;
@@ -672,11 +673,10 @@ public class CircleOfLife {
         int ox = (int) origin.getX();
         int oy = (int) origin.getY();
         
-        int numShapes = shapes.length;
-        for (int i=0; i<numShapes; ++i) {
+        for (MyShape s : shapes) {
             //System.out.println(i);
             
-            Area a = shapes[i].area;
+            Area a = s.area;
             double diag = diagonal(a);
             
             double bestDistance = Double.POSITIVE_INFINITY;
@@ -733,7 +733,7 @@ public class CircleOfLife {
         
         int currentRadius = this.layoutBaseRadius;
         int lastQuadrant = 1;
-        Area a = shapes[0].area;
+        Area a = shapes.get(0).area;
         if (isHorizontal(a)) {
             rotateForward(a);
         }  
@@ -742,11 +742,11 @@ public class CircleOfLife {
         ringMembers.add(a);
         double maxAreaDistance = maxDistance(a, origin);
         
-        int numAreas = shapes.length;
+        int numAreas = shapes.size();
         for (int i=1; i<numAreas; ++i) {
             System.out.println(i);
             
-            a = shapes[i].area;
+            a = shapes.get(i).area;
             
             int q = layoutHelper(lastQuadrant, a, currentRadius, ringMembers, true);
             
@@ -1581,67 +1581,6 @@ public class CircleOfLife {
         return -1;
     }
         
-    public static Area[] neighbor(Area[] areas, Point2D origin, int radius, int gap) {        
-        int num = areas.length;
-        
-        Area[] clone = new Area[num];
-        for (int i=0; i<num; ++i) {
-            clone[i] = (Area) areas[i].clone();
-        }
-
-        if (randNumGen.nextInt(2) == 0) {
-            // rotate a random area
-            int a = randNumGen.nextInt(num);
-            rotateForward(clone[a]);
-        }
-        else {
-            // switch random pair of areas
-            int a = randNumGen.nextInt(num);
-            int b = randNumGen.nextInt(num);
-
-            Area tmp = clone[a];
-            clone[a] = clone[b];
-            clone[b] = tmp;
-        }
-        
-        //layout(clone, origin, radius, gap);
-        
-        return clone;
-    }
-    
-    public static Area[] simulatedAnnealing(Area[] areas, Point2D origin, int radius, int steps, int gap) {
-        /*
-            Let s = s0
-            For k = 0 through kmax (exclusive):
-                T ← temperature(k ∕ kmax)
-                Pick a random neighbour, snew ← neighbour(s)
-                If P(E(s), E(snew), T) ≥ random(0, 1):
-                    s ← snew
-            Output: the final state s
-        */
-        
-        //layout(areas, origin, radius, gap);
-        Area[] bestState = areas;
-        double bestEnergy = energy(bestState, origin);
-        
-//        Area[] currentState = bestState;
-//        double currentEnergy = bestEnergy;
-        
-        for (int i=0; i<steps; ++i) {
-            System.out.println(i);
-            
-            Area[] newState = neighbor(bestState, origin, radius, gap);
-            double newEnergy = energy(newState, origin);
-            
-            if (newEnergy < bestEnergy) {
-                bestEnergy = newEnergy;
-                bestState = newState;
-            }
-        }
-        
-        return bestState;
-    }
-    
     public static class AreaComparator implements Comparator<Area> {
 
         @Override
@@ -1704,13 +1643,14 @@ public class CircleOfLife {
         }
         
         // generate random shapes
-        MyShape[] shapes = new MyShape[numShapes];
+        ArrayList<MyShape> shapes = new ArrayList<>(numShapes);
         for (int i=0; i<numShapes; ++i) {
             Area a = getRandomShape(maxShapeWidth, maxShapeHeight, reshapeIterations);
-            shapes[i] = new MyShape(a, Integer.toString(i));
+            shapes.add(new MyShape(a, Integer.toString(i)));
         }
         
-        Arrays.sort(shapes, new MyShapeReversedComparator());
+        // sort shapes from largest to smallest
+        Collections.sort(shapes, new MyShapeReversedComparator());
         
         // layout shapes in circular manner
         Point2D origin = new Point2D.Double(maxWidth/2, maxHeight/2);
