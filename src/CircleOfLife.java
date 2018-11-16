@@ -1805,11 +1805,14 @@ public class CircleOfLife {
         for (MyShape s : shapes) {
             ig2.fill(s.area);
         }
-        
-        // draw outlines for all areas
+                
         ig2.setPaint(Color.MAGENTA);
-        for (MyShape s : shapes) {
-            ig2.draw(s.area);
+        
+        if (gap == 0) {
+            // draw outlines for all areas
+            for (MyShape s : shapes) {
+                ig2.draw(s.area);
+            }
         }
         
         Font font = ig2.getFont();
