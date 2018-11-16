@@ -153,7 +153,7 @@ public class CircleOfLife {
     private static void shift(Area a, int x, int y) {
         AffineTransform t = new AffineTransform();
         t.translate(x, y);
-        a.transform(t);
+        a.transform(t);      
     }
     
     private static void move(Area a, Point2D p) {
@@ -214,6 +214,8 @@ public class CircleOfLife {
     }
     
     private static boolean hasSimpleOverlap(Area a1, Area a2) {
+        Rectangle2D b1 = a1.getBounds2D();
+        Rectangle2D b2 = a2.getBounds2D();
         return a1.intersects(a2.getBounds2D());
     }
     
@@ -305,13 +307,14 @@ public class CircleOfLife {
     
     private static boolean hasSimpleGap(Area a, int gap, ArrayDeque<Area> others) {
         // wiggle in all 4 directions and check for overlaps
-                
+        
         // up
         shift(a, 0, -gap);
         if (hasSimpleOverlap(a, others)) {
             shift(a, 0, gap);
             return false;
         }
+        shift(a, 0, gap);
         
         // down
         shift(a, 0, gap);
@@ -319,6 +322,7 @@ public class CircleOfLife {
             shift(a, 0, -gap);
             return false;
         }
+        shift(a, 0, -gap);
         
         // left
         shift(a, -gap, 0);
@@ -326,6 +330,7 @@ public class CircleOfLife {
             shift(a, gap, 0);
             return false;
         }
+        shift(a, gap, 0);
         
         // right
         shift(a, gap, 0);
@@ -333,6 +338,7 @@ public class CircleOfLife {
             shift(a, -gap, 0);
             return false;
         }
+        shift(a, -gap, 0);
         
         // up-left
         shift(a, -gap, -gap);
@@ -340,6 +346,7 @@ public class CircleOfLife {
             shift(a, gap, gap);
             return false;
         }
+        shift(a, gap, gap);
         
         // up-right
         shift(a, gap, -gap);
@@ -347,6 +354,7 @@ public class CircleOfLife {
             shift(a, -gap, gap);
             return false;
         }
+        shift(a, -gap, gap);
         
         // down-left
         shift(a, -gap, gap);
@@ -354,6 +362,7 @@ public class CircleOfLife {
             shift(a, gap, -gap);
             return false;
         }
+        shift(a, gap, -gap);
         
         // down-right
         shift(a, gap, gap);
@@ -361,6 +370,7 @@ public class CircleOfLife {
             shift(a, -gap, -gap);
             return false;
         }
+        shift(a, -gap, -gap);
         
         return true;
     }
@@ -374,6 +384,7 @@ public class CircleOfLife {
             shift(a, 0, gap);
             return false;
         }
+        shift(a, 0, gap);
         
         // down
         shift(a, 0, gap);
@@ -381,6 +392,7 @@ public class CircleOfLife {
             shift(a, 0, -gap);
             return false;
         }
+        shift(a, 0, -gap);
         
         // left
         shift(a, -gap, 0);
@@ -388,6 +400,7 @@ public class CircleOfLife {
             shift(a, gap, 0);
             return false;
         }
+        shift(a, gap, 0);
         
         // right
         shift(a, gap, 0);
@@ -395,6 +408,7 @@ public class CircleOfLife {
             shift(a, -gap, 0);
             return false;
         }
+        shift(a, -gap, 0);
         
         // up-left
         shift(a, -gap, -gap);
@@ -402,6 +416,7 @@ public class CircleOfLife {
             shift(a, gap, gap);
             return false;
         }
+        shift(a, gap, gap);
         
         // up-right
         shift(a, gap, -gap);
@@ -409,6 +424,7 @@ public class CircleOfLife {
             shift(a, -gap, gap);
             return false;
         }
+        shift(a, -gap, gap);
         
         // down-left
         shift(a, -gap, gap);
@@ -416,6 +432,7 @@ public class CircleOfLife {
             shift(a, gap, -gap);
             return false;
         }
+        shift(a, gap, -gap);
         
         // down-right
         shift(a, gap, gap);
@@ -423,6 +440,7 @@ public class CircleOfLife {
             shift(a, -gap, -gap);
             return false;
         }
+        shift(a, -gap, -gap);
         
         return true;
     }
@@ -1732,7 +1750,7 @@ public class CircleOfLife {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) {        
         if (args.length == 0) {
             System.err.println("Please provide the path to your configuration file.");
             System.exit(0);
