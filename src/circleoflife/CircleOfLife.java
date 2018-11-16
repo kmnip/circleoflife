@@ -342,13 +342,128 @@ public class CircleOfLife {
         return false;        
     }
     
-    private static boolean hasOverlap(Area a, ArrayList<ArrayDeque<Area>> layers) {
-        for (ArrayDeque<Area> others : layers) {
-            if (hasOverlap(a, others)) {
-                return true;
-            }
+    private static boolean hasSimpleGap(Area a, int gap, ArrayDeque<Area> others) {
+        // wiggle in all 4 directions and check for overlaps
+                
+        // up
+        shift(a, 0, -gap);
+        if (hasSimpleOverlap(a, others)) {
+            shift(a, 0, gap);
+            return false;
         }
-        return false;
+        
+        // down
+        shift(a, 0, gap);
+        if (hasSimpleOverlap(a, others)) {
+            shift(a, 0, -gap);
+            return false;
+        }
+        
+        // left
+        shift(a, -gap, 0);
+        if (hasSimpleOverlap(a, others)) {
+            shift(a, gap, 0);
+            return false;
+        }
+        
+        // right
+        shift(a, gap, 0);
+        if (hasSimpleOverlap(a, others)) {
+            shift(a, -gap, 0);
+            return false;
+        }
+        
+        // up-left
+        shift(a, -gap, -gap);
+        if (hasSimpleOverlap(a, others)) {
+            shift(a, gap, gap);
+            return false;
+        }
+        
+        // up-right
+        shift(a, gap, -gap);
+        if (hasSimpleOverlap(a, others)) {
+            shift(a, -gap, gap);
+            return false;
+        }
+        
+        // down-left
+        shift(a, -gap, gap);
+        if (hasSimpleOverlap(a, others)) {
+            shift(a, gap, -gap);
+            return false;
+        }
+        
+        // down-right
+        shift(a, gap, gap);
+        if (hasSimpleOverlap(a, others)) {
+            shift(a, -gap, -gap);
+            return false;
+        }
+        
+        return true;
+    }
+    
+    private static boolean hasGap(Area a, int gap, ArrayDeque<Area> others) {
+        // wiggle in all 4 directions and check for overlaps
+                
+        // up
+        shift(a, 0, -gap);
+        if (hasOverlap(a, others)) {
+            shift(a, 0, gap);
+            return false;
+        }
+        
+        // down
+        shift(a, 0, gap);
+        if (hasOverlap(a, others)) {
+            shift(a, 0, -gap);
+            return false;
+        }
+        
+        // left
+        shift(a, -gap, 0);
+        if (hasOverlap(a, others)) {
+            shift(a, gap, 0);
+            return false;
+        }
+        
+        // right
+        shift(a, gap, 0);
+        if (hasOverlap(a, others)) {
+            shift(a, -gap, 0);
+            return false;
+        }
+        
+        // up-left
+        shift(a, -gap, -gap);
+        if (hasOverlap(a, others)) {
+            shift(a, gap, gap);
+            return false;
+        }
+        
+        // up-right
+        shift(a, gap, -gap);
+        if (hasOverlap(a, others)) {
+            shift(a, -gap, gap);
+            return false;
+        }
+        
+        // down-left
+        shift(a, -gap, gap);
+        if (hasOverlap(a, others)) {
+            shift(a, gap, -gap);
+            return false;
+        }
+        
+        // down-right
+        shift(a, gap, gap);
+        if (hasOverlap(a, others)) {
+            shift(a, -gap, -gap);
+            return false;
+        }
+        
+        return true;
     }
     
     private static int diagonal(Area a) {
@@ -640,8 +755,9 @@ public class CircleOfLife {
         int ox = (int) origin.getX();
         int oy = (int) origin.getY();
         
+//        int id = 0;
         for (MyShape s : shapes) {
-            //System.out.println(i);
+//            System.out.println(id++);
             
             Area a = s.area;
             double diag = diagonal(a);
@@ -662,7 +778,7 @@ public class CircleOfLife {
                         // move to starting coord
                         moveNW(a, p);
 
-                        if (!overlapsBaseCircle(a) && !hasOverlap(a, ringMembers)) {
+                        if (!overlapsBaseCircle(a) && !hasOverlap(a, ringMembers) && (gap == 0 || hasGap(a, gap, ringMembers))) {
                             // shape did not overlap at starting coord 
 
                             // slide towards origin
@@ -1240,7 +1356,7 @@ public class CircleOfLife {
             Point2D p = new Point2D.Double(x, y);
             moveNW(a, p);
             
-            if (overlapsBaseCircle(a) || hasOverlap(a, ringMembers)) {
+            if (overlapsBaseCircle(a) || hasOverlap(a, ringMembers) || !(gap==0 || hasGap(a, gap, ringMembers))) {
                 moveNW(a, new Point2D.Double(x, y-1));
                 break;
             }
@@ -1262,7 +1378,7 @@ public class CircleOfLife {
             Point2D p = new Point2D.Double(x, y);
             moveNW(a, p);
             
-            if (overlapsBaseCircle(a) || hasOverlap(a, ringMembers)) {
+            if (overlapsBaseCircle(a) || hasOverlap(a, ringMembers) || !(gap==0 || hasGap(a, gap, ringMembers))) {
                 moveNW(a, new Point2D.Double(x+1, y));
                 break;
             }
@@ -1284,7 +1400,7 @@ public class CircleOfLife {
             Point2D p = new Point2D.Double(x, y);
             moveNW(a, p);
             
-            if (overlapsBaseCircle(a) || hasOverlap(a, ringMembers)) {
+            if (overlapsBaseCircle(a) || hasOverlap(a, ringMembers) || !(gap==0 || hasGap(a, gap, ringMembers))) {
                 moveNW(a, new Point2D.Double(x, y+1));
                 break;
             }
@@ -1306,7 +1422,7 @@ public class CircleOfLife {
             Point2D p = new Point2D.Double(x, y);
             moveNW(a, p);
             
-            if (overlapsBaseCircle(a) || hasOverlap(a, ringMembers)) {
+            if (overlapsBaseCircle(a) || hasOverlap(a, ringMembers) || !(gap==0 || hasGap(a, gap, ringMembers))) {
                 moveNW(a, new Point2D.Double(x-1, y));
                 break;
             }
@@ -1328,7 +1444,7 @@ public class CircleOfLife {
             Point2D p = new Point2D.Double(x, y);
             moveNW(a, p);
             
-            if (overlapsBaseCircle(a) || hasSimpleOverlap(a, ringMembers)) {
+            if (overlapsBaseCircle(a) || hasSimpleOverlap(a, ringMembers) || !(gap==0 || hasSimpleGap(a, gap, ringMembers))) {
                 moveNW(a, new Point2D.Double(x, y-1));
                 break;
             }
@@ -1350,7 +1466,7 @@ public class CircleOfLife {
             Point2D p = new Point2D.Double(x, y);
             moveNW(a, p);
             
-            if (overlapsBaseCircle(a) || hasSimpleOverlap(a, ringMembers)) {
+            if (overlapsBaseCircle(a) || hasSimpleOverlap(a, ringMembers) || !(gap==0 || hasSimpleGap(a, gap, ringMembers))) {
                 moveNW(a, new Point2D.Double(x+1, y));
                 break;
             }
@@ -1372,7 +1488,7 @@ public class CircleOfLife {
             Point2D p = new Point2D.Double(x, y);
             moveNW(a, p);
             
-            if (overlapsBaseCircle(a) || hasSimpleOverlap(a, ringMembers)) {
+            if (overlapsBaseCircle(a) || hasSimpleOverlap(a, ringMembers) || !(gap==0 || hasSimpleGap(a, gap, ringMembers))) {
                 moveNW(a, new Point2D.Double(x, y+1));
                 break;
             }
@@ -1394,7 +1510,7 @@ public class CircleOfLife {
             Point2D p = new Point2D.Double(x, y);
             moveNW(a, p);
             
-            if (overlapsBaseCircle(a) || hasSimpleOverlap(a, ringMembers)) {
+            if (overlapsBaseCircle(a) || hasSimpleOverlap(a, ringMembers) || !(gap==0 || hasSimpleGap(a, gap, ringMembers))) {
                 moveNW(a, new Point2D.Double(x-1, y));
                 break;
             }
