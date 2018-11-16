@@ -26,6 +26,7 @@ import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayDeque;
@@ -48,12 +49,14 @@ public class CircleOfLife {
     private final int layoutBaseRadius;
     private final Area baseCircle;
     private final int gap;
+    private final boolean nonZeroGap;
     
     public CircleOfLife(ArrayList<MyShape> shapes, Point2D origin, int layoutBaseRadius, int gap) {
         this.shapes = shapes;
         this.origin = origin;
         this.layoutBaseRadius = layoutBaseRadius;
         this.gap = gap;
+        this.nonZeroGap = gap > 0;
         this.baseCircle = new Area(new Ellipse2D.Double(origin.getX()-layoutBaseRadius, origin.getY()-layoutBaseRadius, 2*layoutBaseRadius, 2*layoutBaseRadius));
     }
     
@@ -147,46 +150,6 @@ public class CircleOfLife {
         }
         
         return a;
-    }
-    
-    private static Area getRandomShape(int maxWidth, int maxHeight, int reshapeIterations) {
-        // randomize width and height
-        int width = ThreadLocalRandom.current().nextInt(maxWidth/2, maxWidth + 1);
-        int height = ThreadLocalRandom.current().nextInt(maxHeight/2, maxHeight + 1);
-//        int width = maxWidth;
-//        int height = maxHeight;
-
-        // initial area is a rectangle
-        Area s = new Area(new Rectangle(0, 0, width, height));
-        
-        // create random rectangular slices from corners
-        int maxSliceWidth = width/2;
-        int maxSliceHeight = height/2;
-        int w,h;
-        
-        for (int i=0; i<reshapeIterations; ++i) {
-            // top left corner
-            w = ThreadLocalRandom.current().nextInt(maxSliceWidth);
-            h = ThreadLocalRandom.current().nextInt(maxSliceHeight);                
-            s.subtract(new Area(new Rectangle(0, 0, w, h)));
-
-            // top right corner
-            w = ThreadLocalRandom.current().nextInt(maxSliceWidth);
-            h = ThreadLocalRandom.current().nextInt(maxSliceHeight);
-            s.subtract(new Area(new Rectangle(width-w, 0, w, h)));
-
-            // bottom right corner
-            w = ThreadLocalRandom.current().nextInt(maxSliceWidth);
-            h = ThreadLocalRandom.current().nextInt(maxSliceHeight);
-            s.subtract(new Area(new Rectangle(width-w, height-h, w, h)));
-
-            // bottom left corner
-            w = ThreadLocalRandom.current().nextInt(maxSliceWidth);
-            h = ThreadLocalRandom.current().nextInt(maxSliceHeight);
-            s.subtract(new Area(new Rectangle(0, height-h, w, h)));
-        }
-        
-        return s;
     }
     
     private static void shift(Area a, int x, int y) {
@@ -755,9 +718,11 @@ public class CircleOfLife {
         int ox = (int) origin.getX();
         int oy = (int) origin.getY();
         
-//        int id = 0;
+        System.out.println(shapes.size() + " input shapes");
+        
+        int id = 1;
         for (MyShape s : shapes) {
-//            System.out.println(id++);
+            System.out.println("Placing shape " + id++);
             
             Area a = s.area;
             double diag = diagonal(a);
@@ -778,7 +743,7 @@ public class CircleOfLife {
                         // move to starting coord
                         moveNW(a, p);
 
-                        if (!overlapsBaseCircle(a) && !hasOverlap(a, ringMembers) && (gap == 0 || hasGap(a, gap, ringMembers))) {
+                        if (!overlapsBaseCircle(a) && !hasOverlap(a, ringMembers) && (!nonZeroGap || hasGap(a, gap, ringMembers))) {
                             // shape did not overlap at starting coord 
 
                             // slide towards origin
@@ -1356,7 +1321,7 @@ public class CircleOfLife {
             Point2D p = new Point2D.Double(x, y);
             moveNW(a, p);
             
-            if (overlapsBaseCircle(a) || hasOverlap(a, ringMembers) || !(gap==0 || hasGap(a, gap, ringMembers))) {
+            if (overlapsBaseCircle(a) || hasOverlap(a, ringMembers) || (nonZeroGap && !hasGap(a, gap, ringMembers))) {
                 moveNW(a, new Point2D.Double(x, y-1));
                 break;
             }
@@ -1378,7 +1343,7 @@ public class CircleOfLife {
             Point2D p = new Point2D.Double(x, y);
             moveNW(a, p);
             
-            if (overlapsBaseCircle(a) || hasOverlap(a, ringMembers) || !(gap==0 || hasGap(a, gap, ringMembers))) {
+            if (overlapsBaseCircle(a) || hasOverlap(a, ringMembers) || (nonZeroGap && !hasGap(a, gap, ringMembers))) {
                 moveNW(a, new Point2D.Double(x+1, y));
                 break;
             }
@@ -1400,7 +1365,7 @@ public class CircleOfLife {
             Point2D p = new Point2D.Double(x, y);
             moveNW(a, p);
             
-            if (overlapsBaseCircle(a) || hasOverlap(a, ringMembers) || !(gap==0 || hasGap(a, gap, ringMembers))) {
+            if (overlapsBaseCircle(a) || hasOverlap(a, ringMembers) || (nonZeroGap && !hasGap(a, gap, ringMembers))) {
                 moveNW(a, new Point2D.Double(x, y+1));
                 break;
             }
@@ -1422,7 +1387,7 @@ public class CircleOfLife {
             Point2D p = new Point2D.Double(x, y);
             moveNW(a, p);
             
-            if (overlapsBaseCircle(a) || hasOverlap(a, ringMembers) || !(gap==0 || hasGap(a, gap, ringMembers))) {
+            if (overlapsBaseCircle(a) || hasOverlap(a, ringMembers) || (nonZeroGap && !hasGap(a, gap, ringMembers))) {
                 moveNW(a, new Point2D.Double(x-1, y));
                 break;
             }
@@ -1444,7 +1409,7 @@ public class CircleOfLife {
             Point2D p = new Point2D.Double(x, y);
             moveNW(a, p);
             
-            if (overlapsBaseCircle(a) || hasSimpleOverlap(a, ringMembers) || !(gap==0 || hasSimpleGap(a, gap, ringMembers))) {
+            if (overlapsBaseCircle(a) || hasSimpleOverlap(a, ringMembers) || (nonZeroGap && !hasSimpleGap(a, gap, ringMembers))) {
                 moveNW(a, new Point2D.Double(x, y-1));
                 break;
             }
@@ -1466,7 +1431,7 @@ public class CircleOfLife {
             Point2D p = new Point2D.Double(x, y);
             moveNW(a, p);
             
-            if (overlapsBaseCircle(a) || hasSimpleOverlap(a, ringMembers) || !(gap==0 || hasSimpleGap(a, gap, ringMembers))) {
+            if (overlapsBaseCircle(a) || hasSimpleOverlap(a, ringMembers) || (nonZeroGap && !hasSimpleGap(a, gap, ringMembers))) {
                 moveNW(a, new Point2D.Double(x+1, y));
                 break;
             }
@@ -1488,7 +1453,7 @@ public class CircleOfLife {
             Point2D p = new Point2D.Double(x, y);
             moveNW(a, p);
             
-            if (overlapsBaseCircle(a) || hasSimpleOverlap(a, ringMembers) || !(gap==0 || hasSimpleGap(a, gap, ringMembers))) {
+            if (overlapsBaseCircle(a) || hasSimpleOverlap(a, ringMembers) || (nonZeroGap && !hasSimpleGap(a, gap, ringMembers))) {
                 moveNW(a, new Point2D.Double(x, y+1));
                 break;
             }
@@ -1510,7 +1475,7 @@ public class CircleOfLife {
             Point2D p = new Point2D.Double(x, y);
             moveNW(a, p);
             
-            if (overlapsBaseCircle(a) || hasSimpleOverlap(a, ringMembers) || !(gap==0 || hasSimpleGap(a, gap, ringMembers))) {
+            if (overlapsBaseCircle(a) || hasSimpleOverlap(a, ringMembers) || (nonZeroGap && !hasSimpleGap(a, gap, ringMembers))) {
                 moveNW(a, new Point2D.Double(x-1, y));
                 break;
             }
@@ -1721,47 +1686,75 @@ public class CircleOfLife {
         return 2*radius + 2*gap;
     }
     
+    private static class MyConfig {
+        final String SEP = "=";
+        final String INPUT_SHAPES_DIMENSIONS_PATH = "shapesDimensionsPath";
+        final String OUTPUT_LAYOUT_PATH = "outputLayoutPath";
+        final String OUTPUT_IMAGE_PATH = "outputImagePath";
+        final String LAYOUT_BASE_RADIUS = "layoutBaseRadius";
+        final String INTER_SHAPE_GAP_SIZE = "interShapeGapSize";
+        
+        String shapesDimensionsPath = null;
+        String outputLayoutPath = null;
+        String outputImagePath = null;
+        int layoutBaseRadius = 10;
+        int interShapeGapSize = 0;
+        
+        private void parseFile(String path) throws IOException {
+            BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(path)));
+            for (String line = br.readLine(); line != null; line = br.readLine()) {
+                String[] items = line.split(SEP, 2);
+                if (items.length == 2) {
+                    String key = items[0].trim();
+                    String value = items[1].trim();
+
+                    switch(key) {
+                        case INPUT_SHAPES_DIMENSIONS_PATH:
+                            shapesDimensionsPath = value;
+                            break;
+                        case OUTPUT_LAYOUT_PATH:
+                            outputLayoutPath = value;
+                            break;
+                        case OUTPUT_IMAGE_PATH:
+                            outputImagePath = value;
+                            break;
+                        case LAYOUT_BASE_RADIUS:
+                            layoutBaseRadius = Integer.parseInt(value);
+                            break;
+                        case INTER_SHAPE_GAP_SIZE:
+                            interShapeGapSize = Integer.parseInt(value);
+                            break;
+                    }
+                }
+            }
+            br.close();
+        }
+    }
+        
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        /*
-        // max dimensions of each shape
-        int maxShapeWidth = 200;
-        int maxShapeHeight = 200;
-        int maxShapeDiagonal = (int) Math.ceil(Math.sqrt(Math.pow(maxShapeWidth, 2) + Math.pow(maxShapeHeight, 2)));
-        
-        int reshapeIterations = 2;
-        int gap = 2;
-        
-        int layoutBaseRadius = 10;
-        int layers = 10;
-        int maxWidth = layoutBaseRadius * 2 + 2 * layers * maxShapeDiagonal + (layers - 1) * gap;
-        int maxHeight = layoutBaseRadius * 2 + 2 * layers * maxShapeDiagonal + (layers - 1) * gap;
-        
-        // calculate the number of shapes to generate for X layers
-        int numShapes = 0;
-        for (int i=0; i<layers; ++i) {
-            numShapes += Math.floor(2 * Math.PI * (layoutBaseRadius + maxShapeDiagonal*i)/maxShapeDiagonal);
+        if (args.length == 0) {
+            System.err.println("Please provide the path to your configuration file.");
+            System.exit(0);
         }
         
-        // generate random shapes
-        ArrayList<MyShape> shapes = new ArrayList<>(numShapes);
-        for (int i=0; i<numShapes; ++i) {
-            Area a = getRandomShape(maxShapeWidth, maxShapeHeight, reshapeIterations);
-            shapes.add(new MyShape(a, Integer.toString(i)));
+        MyConfig config = new MyConfig();
+        try {
+            config.parseFile(args[0]);
         }
-        */
-        
-        // /home/gengar/sandbox/shapes.tsv /home/gengar/sandbox/circleOfLife.png
-        String shapesDimensionsPath = args[0];
-        String outputImagePath = args[1];
-        
+        catch (IOException e) {
+            System.err.println(e.getMessage());
+            System.exit(1);
+        }
+                
         ArrayList<MyShape> shapes = new ArrayList<>();
         int maxDiagonal = 0;
         
         try {
-            BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(shapesDimensionsPath)));
+            System.out.println("Parsing shapes from `" + config.shapesDimensionsPath + "`...");
+            BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(config.shapesDimensionsPath)));
             for (String line = br.readLine(); line != null; line = br.readLine()) {
                 MyShape s = parseLine(line);
                 shapes.add(s);
@@ -1772,11 +1765,11 @@ public class CircleOfLife {
         }
         catch (IOException e) {
             System.err.println(e.getMessage());
-            System.exit(SEG_CLOSE);
+            System.exit(1);
         }
         
-        int layoutBaseRadius = 10;
-        int gap = 0;
+        int layoutBaseRadius = config.layoutBaseRadius;
+        int gap = config.interShapeGapSize;
         int maxLayoutWidth = estimateLayoutWidth(layoutBaseRadius, shapes.size(), maxDiagonal, gap);
         
         // sort shapes from largest to smallest
@@ -1803,9 +1796,20 @@ public class CircleOfLife {
         // shift towards top left corner
         for (MyShape s : shapes) {
             shift(s.area, -minX, -minY);
-            
-            Point p = s.getPosition();
-            System.out.println(s.id + '\t' + p.x + '\t' + p.y + '\t' + s.orientation);
+        }
+        
+        // write layout to file
+        try {
+            System.out.println("Writing layout to `" + config.shapesDimensionsPath + "`...");
+            FileWriter writer = new FileWriter(config.outputLayoutPath);
+            for (MyShape s : shapes) {
+                Point p = s.getPosition();
+                writer.write(s.id + '\t' + p.x + '\t' + p.y + '\t' + s.orientation + '\n');
+            }
+        }
+        catch (IOException e) {
+            System.err.println(e.getMessage());
+            System.exit(1);
         }
         
         // shift origin
@@ -1816,6 +1820,7 @@ public class CircleOfLife {
         int newHeight = maxY - minY + 1;
         
         // output to an image
+        System.out.println("Drawing layout to `" + config.outputImagePath + "`...");
         BufferedImage bi = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_ARGB);
         Graphics2D ig2 = bi.createGraphics();
         ig2.setPaint(Color.black);
@@ -1849,10 +1854,12 @@ public class CircleOfLife {
         
         // write image
         try {
-            ImageIO.write(bi, "PNG", new File(outputImagePath));
+            ImageIO.write(bi, "PNG", new File(config.outputImagePath));
         } catch (IOException ex) {
             Logger.getLogger(CircleOfLife.class.getName()).log(Level.SEVERE, null, ex);
         }
+        
+        System.out.println("Done");
     }
     
 }
