@@ -741,7 +741,7 @@ public class CircleOfLife {
             System.out.println("Placing shape " + id++);
             
             Area a = s.area;
-            double diag = diagonal(a);
+            int diag = diagonal(a);
             
             double bestDistance = Double.POSITIVE_INFINITY;
             int bestOrientation = -1;
