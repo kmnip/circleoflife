@@ -1758,6 +1758,7 @@ public class CircleOfLife {
         
         MyConfig config = new MyConfig();
         try {
+            System.out.println("Parsing configuration from `" + args[0] + "`...");
             config.parseFile(args[0]);
         }
         catch (IOException e) {
