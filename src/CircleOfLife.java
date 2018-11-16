@@ -48,11 +48,13 @@ public class CircleOfLife {
     private final Area baseCircle;
     private final int gap;
     private final boolean nonZeroGap;
+    private final int numStartingPositions;
     
-    public CircleOfLife(ArrayList<MyShape> shapes, Point2D origin, int layoutBaseRadius, int gap) {
+    public CircleOfLife(ArrayList<MyShape> shapes, Point2D origin, int layoutBaseRadius, int gap, int numStartingPositions) {
         this.shapes = shapes;
         this.origin = origin;
         this.layoutBaseRadius = layoutBaseRadius;
+        this.numStartingPositions = numStartingPositions;
         this.gap = gap;
         this.nonZeroGap = gap > 0;
         this.baseCircle = new Area(new Ellipse2D.Double(origin.getX()-layoutBaseRadius, origin.getY()-layoutBaseRadius, 2*layoutBaseRadius, 2*layoutBaseRadius));
@@ -680,7 +682,7 @@ public class CircleOfLife {
     }
     
     private void layout2() {
-        int steps = 64;
+        int steps = numStartingPositions;
         
         double[] angles = new double[steps];
         for (int i=0; i<steps; ++i) {
@@ -688,7 +690,7 @@ public class CircleOfLife {
         }
         
         ArrayDeque<Area> ringMembers = new ArrayDeque<>();
-        int currentRadius = this.layoutBaseRadius;
+        int currentRadius = layoutBaseRadius;
         int ox = (int) origin.getX();
         int oy = (int) origin.getY();
         
@@ -1667,12 +1669,14 @@ public class CircleOfLife {
         final String OUTPUT_IMAGE_PATH = "outputImagePath";
         final String LAYOUT_BASE_RADIUS = "layoutBaseRadius";
         final String INTER_SHAPE_GAP_SIZE = "interShapeGapSize";
+        final String NUM_STARTING_POSITIONS = "numStartingPositions";
         
         String shapesDimensionsPath = null;
         String outputLayoutPath = null;
         String outputImagePath = null;
         int layoutBaseRadius = 10;
         int interShapeGapSize = 0;
+        int numStartingPositions = 64;
         
         private void parseFile(String path) throws IOException {
             BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(path)));
@@ -1697,6 +1701,9 @@ public class CircleOfLife {
                             break;
                         case INTER_SHAPE_GAP_SIZE:
                             interShapeGapSize = Integer.parseInt(value);
+                            break;
+                        case NUM_STARTING_POSITIONS:
+                            numStartingPositions = Integer.parseInt(value);
                             break;
                     }
                 }
@@ -1752,7 +1759,7 @@ public class CircleOfLife {
         
         // layout shapes in circular manner
         Point2D origin = new Point2D.Double(maxLayoutWidth/2, maxLayoutWidth/2);
-        CircleOfLife life = new CircleOfLife(shapes, origin, layoutBaseRadius, gap);
+        CircleOfLife life = new CircleOfLife(shapes, origin, layoutBaseRadius, gap, config.numStartingPositions);
         life.layout2();
         
         // find min x, max x, min y, max y
