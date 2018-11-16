@@ -156,6 +156,12 @@ public class CircleOfLife {
         a.transform(t);      
     }
     
+    private static Area shiftedClone(Area a, int x, int y) {
+        AffineTransform t = new AffineTransform();
+        t.translate(x, y);
+        return a.createTransformedArea(t); 
+    }
+    
     private static void move(Area a, Point2D p) {
         // move area's midpoint to given point
         AffineTransform t = new AffineTransform();
@@ -309,68 +315,44 @@ public class CircleOfLife {
         // wiggle in all 4 directions and check for overlaps
         
         // up
-        shift(a, 0, -gap);
-        if (hasSimpleOverlap(a, others)) {
-            shift(a, 0, gap);
+        if (hasSimpleOverlap(shiftedClone(a, 0, -gap), others)) {
             return false;
         }
-        shift(a, 0, gap);
         
         // down
-        shift(a, 0, gap);
-        if (hasSimpleOverlap(a, others)) {
-            shift(a, 0, -gap);
+        if (hasSimpleOverlap(shiftedClone(a, 0, gap), others)) {
             return false;
         }
-        shift(a, 0, -gap);
         
         // left
-        shift(a, -gap, 0);
-        if (hasSimpleOverlap(a, others)) {
-            shift(a, gap, 0);
+        if (hasSimpleOverlap(shiftedClone(a, -gap, 0), others)) {
             return false;
         }
-        shift(a, gap, 0);
         
         // right
-        shift(a, gap, 0);
-        if (hasSimpleOverlap(a, others)) {
-            shift(a, -gap, 0);
+        if (hasSimpleOverlap(shiftedClone(a, gap, 0), others)) {
             return false;
         }
-        shift(a, -gap, 0);
         
         // up-left
-        shift(a, -gap, -gap);
-        if (hasSimpleOverlap(a, others)) {
-            shift(a, gap, gap);
+        if (hasSimpleOverlap(shiftedClone(a, -gap, -gap), others)) {
             return false;
         }
-        shift(a, gap, gap);
         
         // up-right
-        shift(a, gap, -gap);
-        if (hasSimpleOverlap(a, others)) {
-            shift(a, -gap, gap);
+        if (hasSimpleOverlap(shiftedClone(a, gap, -gap), others)) {
             return false;
         }
-        shift(a, -gap, gap);
         
         // down-left
-        shift(a, -gap, gap);
-        if (hasSimpleOverlap(a, others)) {
-            shift(a, gap, -gap);
+        if (hasSimpleOverlap(shiftedClone(a, -gap, gap), others)) {
             return false;
         }
-        shift(a, gap, -gap);
         
         // down-right
-        shift(a, gap, gap);
-        if (hasSimpleOverlap(a, others)) {
-            shift(a, -gap, -gap);
+        if (hasSimpleOverlap(shiftedClone(a, gap, gap), others)) {
             return false;
         }
-        shift(a, -gap, -gap);
         
         return true;
     }
@@ -379,68 +361,44 @@ public class CircleOfLife {
         // wiggle in all 4 directions and check for overlaps
                 
         // up
-        shift(a, 0, -gap);
-        if (hasOverlap(a, others)) {
-            shift(a, 0, gap);
+        if (hasOverlap(shiftedClone(a, 0, -gap), others)) {
             return false;
         }
-        shift(a, 0, gap);
         
         // down
-        shift(a, 0, gap);
-        if (hasOverlap(a, others)) {
-            shift(a, 0, -gap);
+        if (hasOverlap(shiftedClone(a, 0, gap), others)) {
             return false;
         }
-        shift(a, 0, -gap);
         
         // left
-        shift(a, -gap, 0);
-        if (hasOverlap(a, others)) {
-            shift(a, gap, 0);
+        if (hasOverlap(shiftedClone(a, -gap, 0), others)) {
             return false;
         }
-        shift(a, gap, 0);
         
         // right
-        shift(a, gap, 0);
-        if (hasOverlap(a, others)) {
-            shift(a, -gap, 0);
+        if (hasOverlap(shiftedClone(a, gap, 0), others)) {
             return false;
         }
-        shift(a, -gap, 0);
         
         // up-left
-        shift(a, -gap, -gap);
-        if (hasOverlap(a, others)) {
-            shift(a, gap, gap);
+        if (hasOverlap(shiftedClone(a, -gap, -gap), others)) {
             return false;
         }
-        shift(a, gap, gap);
         
         // up-right
-        shift(a, gap, -gap);
-        if (hasOverlap(a, others)) {
-            shift(a, -gap, gap);
+        if (hasOverlap(shiftedClone(a, gap, -gap), others)) {
             return false;
         }
-        shift(a, -gap, gap);
         
         // down-left
-        shift(a, -gap, gap);
-        if (hasOverlap(a, others)) {
-            shift(a, gap, -gap);
+        if (hasOverlap(shiftedClone(a, -gap, gap), others)) {
             return false;
         }
-        shift(a, gap, -gap);
         
         // down-right
-        shift(a, gap, gap);
-        if (hasOverlap(a, others)) {
-            shift(a, -gap, -gap);
+        if (hasOverlap(shiftedClone(a, gap, gap), others)) {
             return false;
         }
-        shift(a, -gap, -gap);
         
         return true;
     }
