@@ -32,7 +32,6 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
@@ -1780,10 +1779,10 @@ public class CircleOfLife {
         life.layout2();
         
         // find min x, max x, min y, max y
-        int minX = Integer.MAX_VALUE;
-        int minY = Integer.MAX_VALUE;
-        int maxX = Integer.MIN_VALUE;
-        int maxY = Integer.MIN_VALUE;
+        int minX = (int) origin.getX() - layoutBaseRadius;
+        int minY = (int) origin.getY() - layoutBaseRadius;
+        int maxX = (int) origin.getX() + layoutBaseRadius;
+        int maxY = (int) origin.getY() + layoutBaseRadius;
         for (MyShape a : shapes) {
             Rectangle2D r = a.area.getBounds2D();
             minX = (int) Math.min(minX, r.getMinX());
