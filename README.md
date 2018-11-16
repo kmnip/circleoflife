@@ -36,6 +36,7 @@ outputLayoutPath = /home/you/layout.tsv
 outputImagePath = /home/you/layout.png
 layoutBaseRadius = 10
 interShapeGapSize = 2
+numStartingPositions = 64
 ```
 
 ### 3. Generate layout:
