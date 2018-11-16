@@ -1806,6 +1806,7 @@ public class CircleOfLife {
                 Point p = s.getPosition();
                 writer.write(s.id + '\t' + p.x + '\t' + p.y + '\t' + s.orientation + '\n');
             }
+            writer.close();
         }
         catch (IOException e) {
             System.err.println(e.getMessage());
