@@ -87,9 +87,21 @@ public class CircleOfLife {
         }
         
         public void rotate(int orientation) {
-            while (this.orientation != orientation) {
-                this.rotate();
+//            while (this.orientation != orientation) {
+//                this.rotate();
+//            }
+            if (this.orientation == orientation) {
+                return;
             }
+            
+            if (orientation > this.orientation) {
+                rotateForward(area, orientation - this.orientation);
+            }
+            else {
+                rotateForward(area, 4 - (this.orientation - orientation));
+            }
+            
+            this.orientation = orientation;
         }
         
         public Point getPosition() {
@@ -205,14 +217,14 @@ public class CircleOfLife {
     }
     
     public static void rotateForward(Area a) {
-        rotate(a, 1);
+        rotateForward(a, 1);
     }
     
     private static void rotateBackward(Area a) {
-        rotate(a, 3);
+        rotateForward(a, 3);
     }
     
-    private static void rotate(Area a, int numQuadrants) {
+    public static void rotateForward(Area a, int numQuadrants) {
         Rectangle r = a.getBounds();
         
         AffineTransform at = new AffineTransform();
